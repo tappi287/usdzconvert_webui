@@ -1,0 +1,154 @@
+
+
+/*General */
+html{    
+  background:url('http://jobs.froebus.de/wp-content/uploads/2018/11/intro-slider-standort.jpg') no-repeat;
+  background-size: cover;
+  height:100%;
+}
+body
+{
+	font-family:  "Segoe UI",Roboto,Calibri,-apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
+	Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+}
+
+#feedback-page{
+	text-align:center;
+}
+
+#form-main{
+	width:100%;
+	float:left;
+	padding-top:0px;
+}
+
+#form-div {
+	background-color:rgba(72,72,72,0.4);
+    padding-left: 35px;
+    padding-right: 35px;
+    padding-top: 35px;
+    padding-bottom: 50px;
+    position: absolute;
+    width: 80%;
+    left: 0;
+    right: 0;
+    margin: 30px auto 0 auto;
+
+}
+
+.montform .feedback-input {
+	color:#3c3c3c;
+    font-weight:500;
+	border-radius: 0;
+
+	background-color: #fbfbfb;
+	padding: 0 0 0 40px;
+	border: 3px solid rgba(0,0,0,0);
+}
+
+
+/* Icons ---------------------------------- */
+.montform .file-field{
+	background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-upload-cloud.svg);
+	background-size: 30px 30px;
+	background-position: 3px -3px;
+	background-repeat: no-repeat;
+	float: right;
+}
+
+.montform .color-channel{
+    float: right;
+}
+
+.montform label{
+
+}
+
+.montform p.file{
+    background-color: #fbfbfb;
+    border-radius: 5px;
+    padding: 5px 10px;
+    line-height: 22px;
+}
+
+.montform p.file span.description{
+    font-size: small;
+}
+
+.montform  #name:focus{
+	background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-address-book.svg);
+	background-size: 30px 30px;
+	background-position: 8px 5px;
+    background-position: 11px 8px;
+	background-repeat: no-repeat;
+}
+
+.montform #commands{
+	/*background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-pencil.svg);*/
+	/*background-size: 30px 30px;*/
+	background-position: 11px 8px;
+	background-repeat: no-repeat;
+	padding: 0;
+}
+
+.montform  textarea {
+    width: 100%;
+    height: 46px;
+    line-height: 22px;
+    resize:vertical;
+}
+
+.montform  input:hover, .montform  input:focus, .montform  textarea:focus {
+	background-color:#e6e6e6;
+}
+
+.button-blue{
+	font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+	float:left;
+	width: 100%;
+	border: #fbfbfb solid 4px;
+	cursor:pointer;
+	background-color: #3498db;
+	color:white;
+	font-size:24px;
+	padding-top:22px;
+	padding-bottom:22px;
+	transition: all 0.3s;
+  margin-top:-4px;
+  font-weight:700;
+}
+
+.button-blue:hover{
+	background-color: rgba(0,0,0,0);
+	color: #0493bd;
+}
+	
+.montform  .submit:hover {
+	color: #3498db;
+}
+	
+.ease {
+	width: 0px;
+	height: 74px;
+	background-color: #fbfbfb;
+	transition: .3s ease;
+}
+
+.submit:hover .ease{
+  width:100%;
+  background-color:white;
+}
+
+/*Styles for small screens*/
+
+@media  only screen and (max-width: 580px) {
+	#form-div{
+		left: 3%;
+		margin-right: 3%;
+		width: 88%;
+		margin-left: 0;
+		padding-left: 3%;
+		padding-right: 3%;
+	}
+}
+
