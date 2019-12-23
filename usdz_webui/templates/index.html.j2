@@ -1,7 +1,10 @@
 {% extends "base.html.j2" %}
 {% block title %}Index{% endblock %}
 {% block head %}
- {{ super() }}
+    {{ super() }}
+    <!--
+    <script src="{{ url_for('static', filename='js/main.js') }}" type="text/javascript"></script>
+    -->
 {% endblock %}
 
 {% block page_title %}
@@ -13,6 +16,17 @@
 {% endblock %}
 
 {% block content %}
+    <!-- Drag and Drop UI -->
+    <div class="container" style="display: none;">
+        <span id="upload-msg"></span>
+        <input name="scene_file" type="file" id="ajax-file" />
+        
+        <div class="upload-area"  id="uploadfile">
+            <h1>Drag and Drop file here<br/>Or<br/>Click to select file</h1>
+        </div>
+    </div>
+    <!-- /Drag and Drop UI -->
+
     <form method="post" action="/" enctype="multipart/form-data" class="montform" id="reused_form" >
         {% for file_field in content.job_form.file_fields: %}
         <p class="file">

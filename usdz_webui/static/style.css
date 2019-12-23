@@ -20,9 +20,11 @@ body
 	font-family:  "Segoe UI",Roboto,Calibri,-apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
 	Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
 }
-pre {
-	font-family: 'Inconsolata', monospace;
-	white-space: pre-wrap;
+pre, code {
+    font-family: 'Inconsolata', monospace;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    margin: 0;
 }
 
 .title-img {
@@ -126,9 +128,17 @@ pre {
     float: right;
 }
 
+.job-report {
+    font-family: 'Inconsolata', monospace;
+    word-break:break-all;
+    word-wrap: break-word;
+    padding: 4px;
+}
+
 table {
 	border-collapse: collapse;
-	width: 100%;
+    width: 100%;
+    margin-bottom: 15px;
 }
   
 td, th {
@@ -180,6 +190,48 @@ tr:nth-child(even) {
 .submit:hover .ease{
   width:100%;
   background-color:white;
+}
+
+/* Upload DragDrop area */
+.upload-area{
+    width: 70%;
+    height: 200px;
+    border: 2px solid lightgray;
+    border-radius: 3px;
+    margin: 0 auto;
+    margin-top: 100px;
+    text-align: center;
+    overflow: auto;
+}
+
+.upload-area:hover{
+    cursor: pointer;
+}
+
+.upload-area h1{
+    text-align: center;
+    font-weight: normal;
+    font-family: sans-serif;
+    line-height: 50px;
+    color: darkslategray;
+}
+
+#ajax-file{
+    display: none;
+}
+
+/* Thumbnail */
+.thumbnail{
+    width: 80px;
+    height: 80px;
+    padding: 2px;
+    border: 2px solid lightgray;
+    border-radius: 3px;
+    float: left;
+}
+
+.size{
+    font-size:12px;
 }
 
 /*Styles for small screens*/

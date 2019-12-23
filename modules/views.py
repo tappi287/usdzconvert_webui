@@ -1,11 +1,11 @@
 from pathlib import Path
 
-from flask import flash, redirect, render_template, request
+from flask import flash, redirect, render_template, request, jsonify, url_for, send_from_directory
 
 from app import App
 from modules.file_mgr import FileManager
 from modules.globals import get_current_modules_dir
-from modules.job import ConversionJob, JobQueue
+from modules.job import ConversionJob, JobManager
 from modules.site import Site, JobFormFields, Urls
 
 
@@ -45,18 +45,48 @@ def upload_files():
         App.logger.info('Upload succeeded for: %s', str(file_mgr.files))
         flash(message)
 
-        JobQueue.add_job(
+        JobManager.add_job(
             ConversionJob(file_mgr.job_dir, file_mgr.files, request.form.get(JobFormFields.additional_args))
             )
 
         return redirect(Urls.current_job)
 
 
+@App.route(Urls.ajax_upload, methods=['POST'])
+def ajax_upload_file():
+    if request.method != 'POST':
+        return
+
+    App.logger.info('Processing Ajax request for files: %s', request.files)
+    file_mgr = FileManager()
+    result, message = file_mgr.handle_post_request(request.files, request.form)
+
+    if result:
+        resp = jsonify({'message': message, 'size': 4000})
+        resp.status_code = 201
+        return resp
+    else:
+        resp = jsonify({'message': message})
+        resp.status_code = 400
+        return resp
+
+
 @App.route(Urls.current_job)
 def job_page():
     App.logger.info('Endpoint: %s', request.endpoint)
-    return render_template(Urls.templates[Urls.current_job], content=Site(), job=JobQueue.current_job())
+    return render_template(Urls.templates[Urls.current_job], content=Site(), jobs=JobManager.jobs())
 
+
+@App.route(f'{Urls.job_download}/<job_id>', methods=['POST'])
+def job_download(job_id):
+    App.logger.info('Download request for: %s', job_id)
+    job = [j for j in JobManager.jobs() if str(j.id) == str(job_id)]
+
+    if job:
+        job = job[0]
+        return send_from_directory(job.job_dir.as_posix(), filename=job.file())
+    else:
+        return redirect(Urls.current_job)
 
 @App.route(Urls.usd_man)
 def usd_manual():

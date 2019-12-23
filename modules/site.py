@@ -32,16 +32,20 @@ class JobFormFields:
     additional_args_text = 'usdzconvert additional arguments'
 
 
+class Urls:
+    root = '/'
+    current_job = '/current_job'
+    usd_man = '/usd_manual'
+    ajax_upload = '/ajax_upload'
+    job_download = '/job_download'
+
+    templates = {root: 'index.html.j2', current_job: 'job.html.j2', usd_man: 'usdman.html.j2'}
+
+
 class Site:
     title = 'USDZ Conversion Server'
     job_title = 'Job Page'
     version = ''
 
+    urls = Urls
     job_form = JobFormFields()
-
-
-class Urls:
-    root = '/'
-    current_job = '/current_job'
-    usd_man = '/usd_manual'
-    templates = {root: 'index.html.j2', current_job: 'job.html.j2', usd_man: 'usdman.html.j2'}

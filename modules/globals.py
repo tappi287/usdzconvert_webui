@@ -10,7 +10,7 @@ BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__ + 
 SETTINGS_DIR_NAME = APP_FRIENDLY_NAME
 
 
-def get_current_modules_dir():
+def get_current_modules_dir() -> str:
     """ Return path to this app modules directory """
     return BASE_PATH
 

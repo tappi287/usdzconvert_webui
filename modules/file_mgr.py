@@ -97,6 +97,8 @@ class FileManager:
         if self.job_dir is None:
             return False, 'Error storing files on the server. There is nothing you can do about that.'
 
+        files_message = ''
+
         # Store files in job dir
         for file_field in valid_file_fields:
             file = files[file_field.id]
@@ -109,6 +111,7 @@ class FileManager:
             self.files[file_field.id] = {
                 'file_path': file_path, 'use_channel': use_channel if use_channel else None
                 }
+            files_message += f'[{file_field.id}] {file_path.name}'
 
         _logger.info('FileManager stored files: %s', ', '. join([str(f) for f in self.files.values()]))
-        return True, 'Files successfully uploaded.'
+        return True, f'Files successfully uploaded. {files_message}'

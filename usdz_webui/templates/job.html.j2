@@ -11,28 +11,48 @@
 {% endblock %}
 
 {% block description %}
-    <form><input id="reload" type=button value="Refresh" onClick="window.location.reload()"></form>
-    <p>Status of the current job in progress.</p>
+    <form><input id="reload" type="button" value="Refresh" onClick="window.location.reload()"></form>
+    <p>Server Job states.</p>
 {% endblock %}
 
 {% block content %}
-    {% if job %}
+    {% if jobs %}
         <div class="montform">
+        {% for job in jobs: %}
             <div class="file">
-                    <table>
+                <table>
                     <tr><th>Job ID: {{ job.job_dir.name }}</th></tr>
-                    <tr class="title"><th>Status</th><th>Progress</th></tr>
+                    <tr class="title">
+                        <th>Status</th>
+                        <th>Progress</th>
+                        {% if job.file() %}<th>USDZ File</th>{% endif %}
+                    </tr>
                     <tr>
-                        <td>{{ job.status|default('No data available') }}</td>
+                        <td>{{ job.get_state()|default('No state available') }}</td>
                         <td>
                             <label>
                                 <progress max="100" value="{{ job.progress|default('0') }}"></progress>
                                 {{ job.progress|default('0') }}%
                             </label>
                         </td>
+                        {% if job.file() %}
+                        <td>
+                            <form method="get" action="{{ content.urls.job_download }}/{{ job.id }}" class="montform">
+                                <input id="download-{{ job.id }}" type="submit" value="Download">
+                            </form>
+                        </td>
+                        {% endif %}
                     </tr>
                 </table>
-                <br /><br />
+                <table>
+                    <tr><th>Job Report</th></tr>
+                    <tr class="title"><th>Process Output</th></tr>
+                    <tr class="job-report">
+                        <td>
+                            <pre>{{ job.process_messages|default('No process messages available') }}</pre>
+                        </td>
+                    </tr>
+                </table>
                 <table>
                     <tr><th>Job Files</th></tr>
                     <tr class="title">
@@ -60,8 +80,11 @@
                     </tr>
                 </table>
             </div>
+        {% endfor %}
         </div>
     {% else %}
-        <p class="file">There is currently no job running.</p>
+        <div class="montform">
+            <p class="file">There are currently no jobs available.</p>
+        </div>
     {% endif %}
 {% endblock content %}

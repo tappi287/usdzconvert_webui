@@ -17,10 +17,12 @@ def setup_logging(run_method=False, app=None) -> QueueListener:
     # will run multiple processes accessing the same log file.
     # Disable the file handler for the "run" method.
     if run_method or (app and app.debug):
-        print('Logging setup detected DEBUG mode. No file handler will be used.', app.debug)
+        print('Logging setup detected DEBUG mode. No file handler will be used. App.debug: %s', app.debug)
+        log_level = 'DEBUG'
         log_handlers = ['console']
     else:
         print('Logging setup detected production env. File handler will be used.')
+        log_level = DEFAULT_LOG_LEVEL
         log_handlers = ['file', 'console']
 
     logging_queue = Queue(-1)
@@ -56,11 +58,11 @@ def setup_logging(run_method=False, app=None) -> QueueListener:
             },
         'loggers': {
             APP_NAME: {
-                'handlers': log_handlers, 'propagate': False, 'level': DEFAULT_LOG_LEVEL,
+                'handlers': log_handlers, 'propagate': False, 'level': log_level,
                 },
             # Module loggers
             '': {
-                'handlers': ['queue_handler'], 'propagate': False, 'level': DEFAULT_LOG_LEVEL,
+                'handlers': ['queue_handler'], 'propagate': False, 'level': log_level,
                 }
             }
         }
