@@ -1,9 +1,5 @@
-from pathlib import Path
+from modules.globals import upload_path
 
-
-def upload_path():
-    return Path(__file__).parent / 'app/upload'
-
-
-# Enable Flask's debugging features. Should be False in production
 UPLOAD_FOLDER = upload_path()
+UPLOAD_ALLOWED_EXT = {'obj', 'gltf', 'glb', 'fbx', 'abc', 'usd', 'usda', 'usdc', 'usdz',
+                      'tga', 'png', 'jpg', 'jpeg', 'gif'}

@@ -1,0 +1,23 @@
+{% extends "base.html.j2" %}
+{% block title %}Manual{% endblock %}
+{% block head %}
+ {{ super() }}
+{% endblock %}
+
+{% block page_title %}
+    {{ content.title }}
+{% endblock %}
+
+{% block description %}
+    <p>usdzconvert 0.62 Man Page</p>
+{% endblock %}
+
+{% block content %}
+    <div class="montform">
+        <div class="file">
+            <pre>
+                {{ usd_manual|e }}
+            </pre>
+        </div>
+    </div>
+{% endblock content %}

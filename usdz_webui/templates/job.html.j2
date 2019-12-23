@@ -1,0 +1,67 @@
+{% extends "base.html.j2" %}
+
+{% block title %}Jobs{% endblock %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+{% block page_title %}
+    {{ content.job_title }}
+{% endblock %}
+
+{% block description %}
+    <form><input id="reload" type=button value="Refresh" onClick="window.location.reload()"></form>
+    <p>Status of the current job in progress.</p>
+{% endblock %}
+
+{% block content %}
+    {% if job %}
+        <div class="montform">
+            <div class="file">
+                    <table>
+                    <tr><th>Job ID: {{ job.job_dir.name }}</th></tr>
+                    <tr class="title"><th>Status</th><th>Progress</th></tr>
+                    <tr>
+                        <td>{{ job.status|default('No data available') }}</td>
+                        <td>
+                            <label>
+                                <progress max="100" value="{{ job.progress|default('0') }}"></progress>
+                                {{ job.progress|default('0') }}%
+                            </label>
+                        </td>
+                    </tr>
+                </table>
+                <br /><br />
+                <table>
+                    <tr><th>Job Files</th></tr>
+                    <tr class="title">
+                        <th>Element</th>
+                        <th>File</th>
+                        <th>Channel</th>
+                        <th>Material</th>
+                    </tr>
+                    {% for file_id, file, channel in job.list_files() %}
+                    <tr>
+                        <td>{{ file_id }}</td>
+                        <td>{{ file }}</td>
+                        <td>{{ channel|default('', not None) }}</td>
+                        <td>default</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                <br /><br />
+                <table>
+                    <tr><th>Additional Arguments</th></tr>
+                    <tr>
+                        <td>
+                            <pre>{{ job.additional_args|default('- no additional parameters were provided -', not '') }}</pre>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <p class="file">There is currently no job running.</p>
+    {% endif %}
+{% endblock content %}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ content.title }} - {% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='USD_Logo.png', version='1') }}">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', version='27') }}">
+    {% endblock %}
+</head>
+<body>
+    <div class="container">
+        <div id="form-main">
+            <div id="form-div">
+                <!-- Title Area -->
+                <img class="title-img" src="{{ url_for('static', filename='USD_Logo.svg', version='1') }}" width="46"
+                     height="46"/>
+                <h3>{% block page_title %}{% endblock %}</h3>
+                {% block description %}{% endblock %}
+                <!-- /Title Area -->
+
+                <!-- Message Area -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                       <ul class=flashes>
+                           {% for message in messages %}
+                           <li>{{ message }}</li>
+                           {% endfor %}
+                       </ul>
+                    {% endif %}
+                {% endwith %}
+                <!-- /Message Area -->
+
+                <!-- Content Area -->
+                {% block content %}{% endblock %}
+                <!-- /Content Area -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

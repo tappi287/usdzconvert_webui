@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta1 (fe3e306, 2019-09-17)"
+   sodipodi:docname="USD_Logo.svg"
+   xml:space="preserve"
+   style="enable-background:new 0 0 78.6 87.3;"
+   viewBox="0 0 78.6 87.3"
+   y="0px"
+   x="0px"
+   id="USD_x5F_Traced"
+   version="1.1"><metadata
+   id="metadata889">
+  <rdf:RDF>
+    <cc:Work
+       rdf:about="">
+      <dc:format>image/svg+xml</dc:format>
+      <dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    </cc:Work>
+  </rdf:RDF>
+</metadata>
+<defs
+   id="defs887" />
+<sodipodi:namedview
+   inkscape:current-layer="USD_x5F_Traced"
+   inkscape:window-maximized="1"
+   inkscape:window-y="-11"
+   inkscape:window-x="1909"
+   inkscape:cy="39.899275"
+   inkscape:cx="58.960359"
+   inkscape:zoom="5.7502862"
+   showgrid="false"
+   id="namedview885"
+   inkscape:window-height="1346"
+   inkscape:window-width="2560"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0"
+   guidetolerance="10"
+   gridtolerance="10"
+   objecttolerance="10"
+   borderopacity="1"
+   inkscape:document-rotation="0"
+   bordercolor="#666666"
+   pagecolor="#ffffff" />
+
+<style
+   id="style874"
+   type="text/css">
+	.st0{fill:#2392D0;}
+	.st1{fill:#35C6F2;}
+	.st2{fill:#7DD2F6;}
+</style>
+
+<path
+   inkscape:connector-curvature="0"
+   id="path876"
+   d="m 2.5,68.4 c 0,-18.9 0,-37.6 0,-56.6 16.9,5.8 33.7,11.6 50.6,17.4 0,18.7 0,37.4 0,56.5 C 36.1,79.9 19.3,74.1 2.5,68.4 Z M 43.3,36.7 C 32.7,33.1 22.4,29.6 11.9,26 c 0,12.1 0,23.6 0,35.3 10.5,3.6 20.8,7.1 31.3,10.7 0.1,-11.9 0.1,-23.6 0.1,-35.3 z"
+   class="st0" />
+
+<path
+   id="path878"
+   d="M64.3,20.7c0,15,0,29.8,0,45c-2.6-0.8-5-1.6-7.5-2.5c0-12.2,0-24.2,0-36.4c-10.9-3.8-21.6-7.5-32.3-11.2  c0-2.9,0-5.6,0-8.6C37.8,11.6,51,16.2,64.3,20.7z"
+   class="st1" />
+
+<path
+   id="path880"
+   d="M75.7,12.5c0,11.3,0,22.4,0,33.8c-2.7-0.9-5.2-1.8-7.9-2.7c0-8.4,0-16.7,0-25.1c-7.1-2.4-14-4.8-20.9-7.3  c0-2.8,0-5.5,0-8.6C56.6,5.9,66.2,9.2,75.7,12.5z"
+   class="st2" />
+
+<path
+   id="path882"
+   d="M15.4,58.2c0-9.1,0-17.8,0-26.8c8.1,2.8,16.1,5.5,24,8.2c0,8.9,0,17.6,0,26.8C31.4,63.6,23.4,60.9,15.4,58.2z"
+   class="st2" />
+
+</svg>

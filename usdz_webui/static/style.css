@@ -1,17 +1,35 @@
 
 
 /*General */
-html{    
-  background:url('http://jobs.froebus.de/wp-content/uploads/2018/11/intro-slider-standort.jpg') no-repeat;
-  background-size: cover;
+html{
+  background:
+    -webkit-linear-gradient(315deg, hsla(244.85, 39.99%, 20%, 1) 0%, hsla(244.85, 39.99%, 20%, 0) 70%),
+    -webkit-linear-gradient(47deg, hsla(223.77, 39.99%, 20%, 1) 10%, hsla(223.77, 39.99%, 20%, 0) 80%),
+    -webkit-linear-gradient(157deg, hsla(306.03, 39.99%, 20%, 1) 40%, hsla(306.03, 39.99%, 20%, 0) 82%),
+    -webkit-linear-gradient(349deg, hsla(318.87, 39.99%, 20%, 1) 77%, hsla(318.87, 39.99%, 20%, 0) 35%);
+  background:
+    linear-gradient(135deg, hsla(244.85, 39.99%, 20%, 1) 0%, hsla(244.85, 39.99%, 20%, 0) 70%),
+    linear-gradient(43deg, hsla(223.77, 39.99%, 20%, 1) 10%, hsla(223.77, 39.99%, 20%, 0) 80%),
+    linear-gradient(293deg, hsla(306.03, 39.99%, 20%, 1) 40%, hsla(306.03, 39.99%, 20%, 0) 82%),
+    linear-gradient(101deg, hsla(318.87, 39.99%, 20%, 1) 77%, hsla(318.87, 39.99%, 20%, 0) 35%);
   height:100%;
+  color: #F0F0F0;
 }
 body
 {
 	font-family:  "Segoe UI",Roboto,Calibri,-apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
 	Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
 }
+pre {
+	font-family: 'Inconsolata', monospace;
+	white-space: pre-wrap;
+}
 
+.title-img {
+    float: left;
+    margin-top: 8px;
+    margin-right: 8px;
+}
 #feedback-page{
 	text-align:center;
 }
@@ -30,17 +48,19 @@ body
     padding-bottom: 50px;
     position: absolute;
     width: 80%;
+    max-width: 890px;
     left: 0;
     right: 0;
     margin: 30px auto 0 auto;
+}
 
+.montform {
+    color:#3c3c3c;
 }
 
 .montform .feedback-input {
-	color:#3c3c3c;
     font-weight:500;
 	border-radius: 0;
-
 	background-color: #fbfbfb;
 	padding: 0 0 0 40px;
 	border: 3px solid rgba(0,0,0,0);
@@ -64,7 +84,7 @@ body
 
 }
 
-.montform p.file{
+.montform .file{
     background-color: #fbfbfb;
     border-radius: 5px;
     padding: 5px 10px;
@@ -100,6 +120,29 @@ body
 
 .montform  input:hover, .montform  input:focus, .montform  textarea:focus {
 	background-color:#e6e6e6;
+}
+
+#reload {
+    float: right;
+}
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+  
+td, th {
+	border: none;
+	text-align: left;
+	padding: 4px;
+}
+
+tr.title th {
+	background-color: rgb(171, 191, 210);
+}
+
+tr:nth-child(even) {
+	background-color: #dddddd;
 }
 
 .button-blue{

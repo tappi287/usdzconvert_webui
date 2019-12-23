@@ -1,0 +1,50 @@
+{% extends "base.html.j2" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+ {{ super() }}
+{% endblock %}
+
+{% block page_title %}
+    {{ content.title }}
+{% endblock %}
+
+{% block description %}
+    <p>Plan is to replace this with a modular UI. Drag n Drop, define maps per material etc.</p>
+{% endblock %}
+
+{% block content %}
+    <form method="post" action="/" enctype="multipart/form-data" class="montform" id="reused_form" >
+        {% for file_field in content.job_form.file_fields: %}
+        <p class="file">
+            <label>
+                {{ file_field.label }}
+                {% if file_field.required %}
+                    <input name="{{ file_field.id }}" type="file" required class="feedback-input file-field" />
+                {% else %}
+                    <input name="{{ file_field.id }}" type="file" class="feedback-input file-field" />
+                {% endif %}
+            </label>
+            {% if file_field.channels_available %}
+            <input name="{{ file_field.channel_id }}" type="text" class="color-channel" list="color-channels" />
+            <datalist id="color-channels" >
+                <option> R
+                <option> G
+                <option> B
+                <option> A
+            </datalist>
+            {% endif %}
+            <br />
+            <span class="description">{{ file_field.desc }}</span>
+        </p>
+        {% endfor %}
+
+         <p class="file">
+             <textarea name="{{ content.job_form.additional_args }}" class="feedback-input" id="commands"
+                       placeholder="{{ content.job_form.additional_args_text }}"></textarea>
+         </p>
+         <div class="submit">
+             <button type="submit" class="button-blue">SUBMIT</button>
+             <div class="ease"></div>
+         </div>
+    </form>
+{% endblock content %}
