@@ -12,7 +12,8 @@
 {% endblock %}
 
 {% block description %}
-    <p>Plan is to replace this with a modular UI. Drag n Drop, define maps per material etc.</p>
+    <p>Drag n drop files to the appropiate upload fields. You need to manually assign texture maps. They will not be read from the input file.
+     Submit will enqueue a conversion job and guide you to the job page.</p>
 {% endblock %}
 
 {% block content %}
@@ -28,29 +29,59 @@
     <!-- /Drag and Drop UI -->
 
     <form method="post" action="/" enctype="multipart/form-data" class="montform" id="reused_form" >
-        {% for file_field in content.job_form.file_fields: %}
-        <p class="file">
-            <label>
-                {{ file_field.label }}
-                {% if file_field.required %}
-                    <input name="{{ file_field.id }}" type="file" required class="feedback-input file-field" />
-                {% else %}
-                    <input name="{{ file_field.id }}" type="file" class="feedback-input file-field" />
-                {% endif %}
-            </label>
-            {% if file_field.channels_available %}
-            <input name="{{ file_field.channel_id }}" type="text" class="color-channel" list="color-channels" />
-            <datalist id="color-channels" >
-                <option> R
-                <option> G
-                <option> B
-                <option> A
-            </datalist>
+        {% for required_group in content.job_form.file_fields|groupby('required')|reverse %}
+            {% if not required_group.grouper %}
+            <details id="image-maps">
+            <summary>Texture Maps</summary>
             {% endif %}
-            <br />
-            <span class="description">{{ file_field.desc }}</span>
-        </p>
+            {% for file_field in required_group.list %}
+                <p class="file">
+                    <label>
+                        {{ file_field.label }}
+                        {% if file_field.required %}
+                            <input name="{{ file_field.id }}" type="file" required class="feedback-input file-field" />
+                        {% else %}
+                            <input name="{{ file_field.id }}" type="file" class="feedback-input file-field" />
+                        {% endif %}
+                    </label>
+                    {% if file_field.channels_available %}
+                    <input name="{{ file_field.channel_id }}" type="text" class="color-channel" list="color-channels" />
+                    <datalist id="color-channels" >
+                        <option> R
+                        <option> G
+                        <option> B
+                        <option> A
+                    </datalist>
+                    {% endif %}
+                    <br />
+                    <span class="description">{{ file_field.desc|e }}</span>
+                </p>
+            {% endfor %}
+            {% if not required_group.grouper %}
+            </details>
+            {% endif %}
         {% endfor %}
+        <details id="options">
+            <summary>Options</summary>
+            {% for option_field in content.job_form.option_fields %}
+                <p class="file">
+                    <label>
+                        {{ option_field.label }}
+                        {% if option_field.input_type == 'textarea' %}
+                            <input name="{{ option_field.id }}" type="text" class="color-channel" />
+                        {% elif option_field.input_type == 'checkbox' %}
+                            <input name="{{ option_field.id }}" type="checkbox" class="color-channel" />
+                        {% elif option_field.input_type == 'float' %}
+                            <input name="{{ option_field.id }}" type="number" step="any"  min="0" class="color-channel" />
+                        {% elif option_field.input_type == 'url' %}
+                            <input name="{{ option_field.id }}" type="url" class="color-channel" />
+                        {% endif %}
+                        <br />
+                    </label>
+                    <span class="description">{{ option_field.desc|e }}</span>
+                </p>
+            {% endfor %}
+        </details>
 
          <p class="file">
              <textarea name="{{ content.job_form.additional_args }}" class="feedback-input" id="commands"

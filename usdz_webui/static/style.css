@@ -12,14 +12,16 @@ html{
     linear-gradient(43deg, hsla(223.77, 39.99%, 20%, 1) 10%, hsla(223.77, 39.99%, 20%, 0) 80%),
     linear-gradient(293deg, hsla(306.03, 39.99%, 20%, 1) 40%, hsla(306.03, 39.99%, 20%, 0) 82%),
     linear-gradient(101deg, hsla(318.87, 39.99%, 20%, 1) 77%, hsla(318.87, 39.99%, 20%, 0) 35%);
+  background-attachment: fixed;
   height:100%;
   color: #F0F0F0;
 }
 body
 {
-	font-family:  "Segoe UI",Roboto,Calibri,-apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
-	Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+    font-family: Lato, "Helvetica Neue", sans-serif, -apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
+    Ubuntu,Cantarell;
 }
+
 pre, code {
     font-family: 'Inconsolata', monospace;
     white-space: pre-wrap;
@@ -27,10 +29,39 @@ pre, code {
     margin: 0;
 }
 
+h1, h2, h3, h4, h5, h6, h7, .montform label, details > summary {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.error {
+    color: rgb(238, 42, 42);
+}
+
 .title-img {
     float: left;
     margin-top: 8px;
     margin-right: 8px;
+}
+
+.page-description {
+    font-family: "Segoe UI Light", "Helvetica Neue", sans-serif, -apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
+    Ubuntu,Cantarell;
+    font-size: 14px;
+}
+
+div.server-message {
+    color: #eeeeee;
+    background-color: rgb(87, 76, 114);
+    border-radius: 10px;
+    padding: 5px 0;
+    margin: 15px 0;
+}
+.server-message span {
+    padding: 0 15px;
+}
+
+.page-title {
+    margin-bottom: 25px;
 }
 #feedback-page{
 	text-align:center;
@@ -43,7 +74,8 @@ pre, code {
 }
 
 #form-div {
-	background-color:rgba(72,72,72,0.4);
+    background-color:rgba(0, 0, 0, 0.164);
+    border-radius: 14px;
     padding-left: 35px;
     padding-right: 35px;
     padding-top: 35px;
@@ -63,7 +95,6 @@ pre, code {
 .montform .feedback-input {
     font-weight:500;
 	border-radius: 0;
-	background-color: #fbfbfb;
 	padding: 0 0 0 40px;
 	border: 3px solid rgba(0,0,0,0);
 }
@@ -80,10 +111,6 @@ pre, code {
 
 .montform .color-channel{
     float: right;
-}
-
-.montform label{
-
 }
 
 .montform .file{
@@ -106,11 +133,10 @@ pre, code {
 }
 
 .montform #commands{
-	/*background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-pencil.svg);*/
-	/*background-size: 30px 30px;*/
 	background-position: 11px 8px;
 	background-repeat: no-repeat;
-	padding: 0;
+    padding: 0;
+    outline: none;
 }
 
 .montform  textarea {
@@ -121,11 +147,21 @@ pre, code {
 }
 
 .montform  input:hover, .montform  input:focus, .montform  textarea:focus {
-	background-color:#e6e6e6;
+    /* background-color:#e6e6e6; */
+    color: rgb(12, 70, 136)
 }
 
 #reload {
     float: right;
+    color: #3c3c3c;
+    background: #cdcdcd;
+    transition: color 0.3s ease, background 0.3s ease;
+}
+
+#reload:hover {
+    float: right;
+    background-color: #3498db;
+    color: white;
 }
 
 .job-report {
@@ -135,10 +171,14 @@ pre, code {
     padding: 4px;
 }
 
+.job {
+    margin-bottom: 35px;
+}
+
 table {
 	border-collapse: collapse;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
   
 td, th {
@@ -151,11 +191,18 @@ tr.title th {
 	background-color: rgb(171, 191, 210);
 }
 
-tr:nth-child(even) {
-	background-color: #dddddd;
+details > summary {
+    cursor: pointer;
+    outline: none;
 }
 
-.button-blue{
+details#image-maps > summary, details#options > summary {
+    color: rgb(238, 238, 238);
+    padding: 5px 0;
+}
+
+
+.button-blue, .button-red {
 	font-family: 'Montserrat', Arial, Helvetica, sans-serif;
 	float:left;
 	width: 100%;
@@ -166,9 +213,17 @@ tr:nth-child(even) {
 	font-size:24px;
 	padding-top:22px;
 	padding-bottom:22px;
-	transition: all 0.3s;
-  margin-top:-4px;
-  font-weight:700;
+    transition: all 0.3s;
+    outline: none;
+    margin-top:-4px;
+    font-weight:700;
+}
+
+.button-red {
+    background-color: tomato;
+}
+.button-red:hover {
+    background-color: red;
 }
 
 .button-blue:hover{
@@ -220,6 +275,32 @@ tr:nth-child(even) {
     display: none;
 }
 
+.downloads a {
+  text-decoration: none;
+  color: rgb(12, 70, 136);
+  transition: color 0.3s ease;
+}
+
+.downloads a:hover {
+  color: rgb(65, 203, 207);
+}
+
+.downloads .button-blue, .downloads .button-red {
+    width: auto;
+    float: right;
+    font-size: 0.8em;
+    border: none;
+    padding: 5px;
+    margin: 0;
+}
+
+.downloads th, .downloads td {
+    text-align: right;
+}
+.downloads th:nth-child(1), .downloads td:nth-child(1) {
+    text-align: left;
+}
+  
 /* Thumbnail */
 .thumbnail{
     width: 80px;

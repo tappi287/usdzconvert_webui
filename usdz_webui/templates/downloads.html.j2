@@ -1,0 +1,57 @@
+{% extends "base.html.j2" %}
+{% block title %}Downloads{% endblock %}
+{% block head %}
+ {{ super() }}
+{% endblock %}
+
+{% block page_title %}
+    Downloads
+{% endblock %}
+
+{% block description %}
+    <p>Access result files from all jobs ever created in the history of mackind.</p>
+{% endblock %}
+
+{% block content %}
+    <div class="montform">
+        <div class="file downloads">
+            <table>
+                <tr class="title">
+                    <th>File</th>
+                    <th>Size</th>
+                    <th>Last modified</th>
+                    <th></th>
+                </tr>
+            {% if not downloads %}
+                <tr>
+                    <td>No downloadable files have been created yet.</td>
+                <tr>
+            {% endif %}
+            {% for entry_id, entry in downloads %}
+                <tr>
+                    <td>
+                        <a href="{{ entry.get('url') }}">{{ entry.get('name') }}</a>
+                    </td>
+                    <td>
+                        {{ entry.get('size') }}
+                    </td>
+                    <td>
+                        {{ entry.get('created') }}
+                    </td>
+                    <td>
+                        {% set download_file = entry_id + "/" + entry.get("name") %}
+                        <form method="get" action="{{ content.urls.download_delete }}/{{ entry_id }}" class="montform">
+                            <button type="submit" id="{{ entry_id }}" class="button-red" 
+                            title="Permanently delete the download file from the server."
+                            onclick="return confirm('Are you sure you want to permanently delete {{ download_file }}?')">Delete</button>
+                        </form>
+                        <form method="get" action="{{ entry.get('url') }}" class="montform">
+                            <button type="submit" id="{{ entry_id }}" class="button-blue">Download</button>
+                        </form>
+                    </td>
+                <tr>
+            {% endfor %}
+            </table>
+        </div>
+    </div>
+{% endblock content %}

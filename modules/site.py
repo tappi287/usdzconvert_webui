@@ -1,6 +1,11 @@
 
 
 class JobFormFields:
+    class OptionField:
+        def __init__(self, _id: str, label: str, desc: str, input_type: str):
+            self.id, self.label, self.desc = _id, label, desc
+            self.input_type = input_type
+
     class FileField:
         def __init__(self, _id: str, label: str, desc: str, required: bool=False, channels_available: bool=False):
             self.id = _id
@@ -28,18 +33,36 @@ class JobFormFields:
                   channels_available=True)
         ]
 
+    option_fields = [
+        OptionField('url', 'Url', 'Add URL metadata', 'url'),
+        OptionField('copyright', 'Copyright', 'Add copyright metadata', 'textarea'),
+        OptionField('copytextures', 'Copy textures', 'Copy texture files (for .usd/usda/usdc) workflows', 'checkbox'),
+        OptionField('metersPerUnit', 'Meters Per Unit', 'Set metersPerUnit attribute with float value', 'float'),
+        OptionField('loop', 'Loop', 'Set animation loop flag to 1', 'checkbox'),
+        OptionField('no-loop', 'No Loop', 'Set animation loop flag to 0', 'checkbox'),
+        OptionField('iOS12', 'iOS12', 'Make output file compatible with iOS 12 frameworks', 'checkbox'),
+        OptionField('v', 'Verbose', 'Verbose output.', 'checkbox'),
+        ]
+
     additional_args = 'additional_args'
     additional_args_text = 'usdzconvert additional arguments'
 
 
 class Urls:
     root = '/'
-    current_job = '/current_job'
-    usd_man = '/usd_manual'
-    ajax_upload = '/ajax_upload'
+    job_page = '/jobs'
     job_download = '/job_download'
+    job_delete = '/job_delete'
+    usd_man = '/usd_manual'
+    downloads = '/downloads'
+    download_delete = '/downloads/delete'
+    ajax_upload = '/ajax_upload'
+    static_downloads = 'static/downloads'
 
-    templates = {root: 'index.html.j2', current_job: 'job.html.j2', usd_man: 'usdman.html.j2'}
+    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads}
+
+    templates = {root: 'index.html.j2', job_page: 'job.html.j2', usd_man: 'usdman.html.j2',
+                 downloads: 'downloads.html.j2'}
 
 
 class Site:

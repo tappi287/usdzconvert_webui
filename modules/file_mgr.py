@@ -1,14 +1,19 @@
+import shutil
 import time
+from datetime import datetime
+
+from modules import filesize
 from pathlib import Path
 from shutil import rmtree
-from typing import Tuple, Union, Set, List
+from typing import Dict, List, Tuple, Union
 
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 
 from app import App
+from modules.globals import APP_NAME, get_current_modules_dir, OUT_SUFFIX
 from modules.log import setup_logger
-from modules.site import JobFormFields
+from modules.site import JobFormFields, Urls
 
 _logger = setup_logger(__name__)
 
@@ -18,24 +23,96 @@ class FileManager:
         self.job_dir = None
         self.files = dict()
 
-    @staticmethod
-    def clear_upload_folder() -> bool:
+    @classmethod
+    def clear_upload_folder(cls) -> bool:
         upload_dir: Path = App.config.get('UPLOAD_FOLDER')
+        return cls.clear_folder(upload_dir)
 
-        if upload_dir.exists():
+    @staticmethod
+    def clear_folder(folder: Path, re_create: bool = True) -> bool:
+        """ Clear all contents of a directory aka deleting and re-creating it. """
+        if folder.exists():
             try:
-                rmtree(upload_dir)
+                rmtree(folder)
             except Exception as e:
                 _logger.error('Error cleaning upload folder! %s', e, exc_info=1)
                 return False
 
+        if re_create:
             try:
-                upload_dir.mkdir(exist_ok=False)
+                folder.mkdir(exist_ok=False)
             except FileExistsError or FileNotFoundError:
                 _logger.error('Error re-creating upload folder!', exc_info=1)
                 return False
 
         return True
+
+    @staticmethod
+    def move_to_static_dir(file: Path, create_dir: str = '') -> Union[None, Path]:
+        """
+        Move a file to the static download dir.
+        Provide a string with create_dir to create a sub directory of that name.
+        """
+        if not file.is_file() or not file.exists():
+            return
+
+        static_download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads
+
+        if create_dir:
+            static_download_dir = static_download_dir / secure_filename(create_dir)
+            try:
+                static_download_dir.mkdir(parents=True, exist_ok=True)
+            except FileExistsError or FileNotFoundError:
+                _logger.error('Error creating download folder!', exc_info=1)
+                return
+
+        new_file_path = static_download_dir / file.name
+
+        try:
+            shutil.move(file.as_posix(), new_file_path.as_posix())
+        except Exception as e:
+            _logger.error('Error moving file: %s', e, exc_info=1)
+            return
+
+        return new_file_path
+
+    @staticmethod
+    def list_downloads() -> Dict[str, Dict]:
+        """ Return contents of download directory:
+            Dict[folder_name(unique)] = Tuple[download_url, file_name, file_size]
+        """
+        download_files: Dict[str, Dict] = dict()
+        static_download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads
+
+        # Iterate sub directory's
+        for folder in static_download_dir.glob('*'):
+            for file in folder.glob('*.*'):
+                # Create url
+                download_url = f'{Urls.static_downloads}/{folder.name}/{file.name}'
+
+                try:
+                    # File size
+                    size = filesize.size(file.stat().st_size, system=filesize.alternative)
+                    # Created Date from folder modification time
+                    created = datetime.fromtimestamp(folder.stat().st_mtime).strftime('%d.%m.%Y %H:%M:%S')
+                except Exception as e:
+                    _logger.error('Could not access file size: %s', e)
+                    size = 'N/A'
+                    created = 'N/A'
+
+                # Store entry
+                download_files[folder.name] = {'url': download_url, 'name': file.name, 'size': size, 'created': created}
+
+        return download_files
+
+    @classmethod
+    def delete_download(cls, folder_id: str) -> bool:
+        download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads / folder_id
+
+        if cls.clear_folder(download_dir, re_create=False):
+            return True
+
+        return False
 
     @staticmethod
     def _allowed_file(filename):
@@ -105,12 +182,17 @@ class FileManager:
             file_path = self.job_dir / secure_filename(file.filename)
             file.save(file_path.as_posix())
 
-            use_channel = form.get(file_field.channel_id) or ''
+            use_channel = form.get(file_field.channel_id, '')
 
             # Update files dict
-            self.files[file_field.id] = {
-                'file_path': file_path, 'use_channel': use_channel if use_channel else None
-                }
+            self.files[file_field.id] = {'file_path': file_path, 'use_channel': use_channel}
+
+            # Set output scene file based on input scene file
+            if file_field.id == 'scene_file':
+                self.files['out_file'] = {'file_path': file_path.with_suffix(OUT_SUFFIX)}
+                # TODO: For testing use inputFile as outputFile
+                # self.files['out_file'] = {'file_path': file_path}
+
             files_message += f'[{file_field.id}] {file_path.name}'
 
         _logger.info('FileManager stored files: %s', ', '. join([str(f) for f in self.files.values()]))

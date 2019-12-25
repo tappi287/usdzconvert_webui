@@ -1,9 +1,15 @@
+import os
 from pathlib import Path
 from typing import Iterator, Union
 
+from werkzeug.datastructures import ImmutableMultiDict
+from werkzeug.utils import secure_filename
+
 from modules.create_process import RunProcess
+from modules.file_mgr import FileManager
 from modules.globals import get_current_modules_dir
 from modules.log import setup_logger
+from modules.site import Urls, JobFormFields
 
 _logger = setup_logger(__name__)
 
@@ -20,10 +26,11 @@ class ConversionJob:
     state_names = {States.queued: 'Queued', States.in_progress: 'In progress',
                    States.finished: 'finished', States.failed: 'failed'}
 
-    def __init__(self, job_dir: Path, files: dict, additional_args: str):
+    def __init__(self, job_dir: Path, files: dict, form: ImmutableMultiDict):
         self.job_dir = job_dir
         self.files = files
-        self.additional_args = additional_args
+        self.option_args = self.create_options(form)
+        self.additional_args = form.get(JobFormFields.additional_args, '')
 
         self.state = -1  # One of self.States
         self.progress = int()  # Progress 0-100
@@ -32,10 +39,31 @@ class ConversionJob:
         self.process_messages = str()
         self.errors = str()
 
-        self.id_count += 1
-        self.id = self.id_count
+        ConversionJob.id_count += 1
+        self.id = ConversionJob.id_count
 
-        self.out_file = None
+    def create_options(self, form: ImmutableMultiDict) -> list:
+        option_args = list()
+        for option in JobFormFields.option_fields:
+            value = form.get(option.id)
+
+            if option.input_type == 'checkbox':
+                if value == 'on':
+                    option_args.append(f'-{option.id}')
+            else:
+                if value:
+                    option_args.append(f'-{option.id}')
+                    option_args.append(value)
+
+        return option_args
+
+    @property
+    def out_file(self) -> Path:
+        return self.files.get('out_file', dict()).get('file_path', Path('.'))
+
+    @out_file.setter
+    def out_file(self, val: Path):
+        self.files['out_file']['file_path'] = val
 
     def list_files(self) -> Iterator[str]:
         for file_id, file_entry in self.files.items():
@@ -44,14 +72,30 @@ class ConversionJob:
     def message_updates(self, msg):
         self.process_messages += msg
 
-    def file(self) -> Union[None, str]:
-        if Path(self.out_file).exists() and self.completed:
-            return self.out_file
+    def download_filename(self) -> Union[None, str]:
+        if self.out_file.exists() and self.completed:
+            return f'{os.path.split(Urls.static_downloads)[1]}/' \
+                   f'{secure_filename(self.job_dir.name)}/{self.out_file.name}'
+
+    def direct_download_url(self) -> Union[None, str]:
+        if self.out_file.exists() and self.completed:
+            return f'{Urls.static_downloads}/' \
+                   f'{secure_filename(self.job_dir.name)}/{self.out_file.name}'
 
     def get_state(self) -> str:
         return self.state_names.get(self.state, 'No job state set')
 
     def set_complete(self):
+        # Move Job file to static, public available, directory
+        static_file_path = FileManager.move_to_static_dir(self.out_file, self.job_dir.name)
+
+        if static_file_path is None:
+            _logger.error('Could not move final Job file. Setting job failed.')
+            self.set_failed('Could not move USDZ to static directory.')
+            return
+
+        _logger.info('Moved Job result file to static directory: %s', static_file_path)
+        self.out_file = static_file_path
         self.state = self.States.finished
         self.completed = True
         self.progress = 100
@@ -73,13 +117,12 @@ class ConversionJob:
 
 class JobManager:
     _current_job: Union[None, ConversionJob] = None
-    queue = list()
+    _queue = list()
+    _jobs = list()
 
     @classmethod
-    def jobs(cls):
-        if cls.current_job():
-            return [cls.current_job()] + cls.queue
-        return cls.queue
+    def get_jobs(cls) -> Iterator[ConversionJob]:
+        return cls._jobs
 
     @classmethod
     def current_job(cls) -> Union[None, ConversionJob]:
@@ -88,20 +131,42 @@ class JobManager:
 
     @classmethod
     def add_job(cls, job: ConversionJob):
-        if job in cls.queue or job is cls._current_job:
+        if job in cls._queue or job is cls._current_job:
             return
 
-        cls.queue.append(job)
+        cls._jobs.append(job)
+
+        cls._queue.append(job)
         job.state = job.States.queued
 
         if not cls._current_job or cls._current_job.completed:
             cls.run_job_queue()
 
     @classmethod
+    def remove_job(cls, job_id) -> bool:
+        for job in cls.get_jobs():
+            _logger.debug('Mgr iterating job: %s', job.id)
+            if str(job.id) == str(job_id):
+                _logger.debug('Deleting job: %s', job_id)
+                cls._jobs.remove(job)
+                del job
+                return True
+
+        return False
+
+    @classmethod
     def _get_next_job(cls) -> Union[None, ConversionJob]:
-        if cls.queue:
-            return cls.queue.pop(0)
+        if cls._queue:
+            return cls._queue.pop(0)
         return None
+
+    @classmethod
+    def get_job_by_id(cls, job_id) -> Union[None, ConversionJob]:
+        for job in cls.get_jobs():
+            if str(job_id) == str(job.id):
+                return job
+        else:
+            return
 
     @staticmethod
     def create_job_arguments(job: ConversionJob) -> list:
@@ -112,25 +177,28 @@ class JobManager:
 
         # Add texture maps file arguments
         for file_id, file_entry in job.files.items():
-            path = Path(file_entry.get("file_path"))
+            file_path = Path(file_entry.get("file_path"))
 
-            if file_id == 'scene_file':
-                out_file = path.with_suffix('.usdz').as_posix()
-                args.append(path.as_posix())  # inputFile
-                args.append(out_file)  # outputFile
-                job.out_file = path.as_posix()
+            if file_id in ('scene_file', 'out_file'):
+                args.append(file_path.as_posix())  # inputFile/outputFile arguments
                 continue
 
             args.append(f'-{file_id}')
 
-            channel = str(file_entry.get("use_channel")).lower()
+            channel = file_entry.get('use_channel')
             if channel:
-                args.append(channel)
-            args.append(path.as_posix())
+                _logger.info('Adding channel argument: %s', channel)
+                args.append(channel.lower())
+            args.append(file_path.as_posix())
+
+        # Add options
+        if job.option_args:
+            args += job.option_args
 
         # Add additional arguments
         if job.additional_args:
-            args.append(job.additional_args)
+            for a in job.additional_args.split(' '):
+                args.append(a)
 
         return args
 

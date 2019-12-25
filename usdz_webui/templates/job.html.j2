@@ -11,74 +11,101 @@
 {% endblock %}
 
 {% block description %}
-    <form><input id="reload" type="button" value="Refresh" onClick="window.location.reload()"></form>
+    <form class="downloads"><button id="reload" type="button" onClick="window.location.reload()" class="button-blue">Refresh</button></form>
     <p>Server Job states.</p>
 {% endblock %}
 
 {% block content %}
     {% if jobs %}
         <div class="montform">
-        {% for job in jobs: %}
-            <div class="file">
+        {% for job in jobs|reverse: %}
+            <div class="file job">
                 <table>
-                    <tr><th>Job ID: {{ job.job_dir.name }}</th></tr>
+                    <tr>
+                        <th>Job ID: {{ job.id }}</th>
+                        <th>{{ job.files['scene_file']['file_path'].name }}</th>
+                    </tr>
                     <tr class="title">
                         <th>Status</th>
                         <th>Progress</th>
-                        {% if job.file() %}<th>USDZ File</th>{% endif %}
+                        {% if job.completed %}<th style="text-align: right;"></th>{% endif %}
+                        {% if job.download_filename() %}<th style="text-align: right;">Download Output File</th>{% endif %}
                     </tr>
                     <tr>
-                        <td>{{ job.get_state()|default('No state available') }}</td>
+                        <td {% if job.state > job.States.finished %}class="error"{% endif %}>
+                            {{ job.get_state()|default('No state available') }}
+                        </td>
                         <td>
                             <label>
                                 <progress max="100" value="{{ job.progress|default('0') }}"></progress>
                                 {{ job.progress|default('0') }}%
                             </label>
                         </td>
-                        {% if job.file() %}
-                        <td>
-                            <form method="get" action="{{ content.urls.job_download }}/{{ job.id }}" class="montform">
-                                <input id="download-{{ job.id }}" type="submit" value="Download">
+                        {% if job.completed %}
+                        <td class="downloads">
+                            <form method="get" action="{{ content.urls.job_delete }}/{{ job.id }}" class="montform">
+                                <button title="Permanently delete the job. Output files will remain in Downloads."
+                                 type="submit" id="delete-{{ job.id }}" class="button-red">Delete</button>
+                            </form>
+                        </td>
+                        {% endif %}
+                        {% if job.download_filename() %}
+                        <td class="downloads">
+                            <form method="get" action="{{ job.direct_download_url() }}" class="montform">
+                                <button type="submit" id="download-{{ job.id }}" class="button-blue">Download</button>
                             </form>
                         </td>
                         {% endif %}
                     </tr>
                 </table>
-                <table>
-                    <tr><th>Job Report</th></tr>
-                    <tr class="title"><th>Process Output</th></tr>
-                    <tr class="job-report">
-                        <td>
-                            <pre>{{ job.process_messages|default('No process messages available') }}</pre>
-                        </td>
-                    </tr>
-                </table>
-                <table>
-                    <tr><th>Job Files</th></tr>
-                    <tr class="title">
-                        <th>Element</th>
-                        <th>File</th>
-                        <th>Channel</th>
-                        <th>Material</th>
-                    </tr>
-                    {% for file_id, file, channel in job.list_files() %}
-                    <tr>
-                        <td>{{ file_id }}</td>
-                        <td>{{ file }}</td>
-                        <td>{{ channel|default('', not None) }}</td>
-                        <td>default</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                <br /><br />
-                <table>
-                    <tr><th>Additional Arguments</th></tr>
-                    <tr>
-                        <td>
-                            <pre>{{ job.additional_args|default('- no additional parameters were provided -', not '') }}</pre>
-                        </td>
-                    </tr>
-                </table>
+                <details>
+                    <summary>Job Details</summary>
+                    <table>
+                        <tr class="title"><th>Process Output</th></tr>
+                        <tr class="job-report">
+                            <td>
+                                {% if job.process_messages %}
+                                <pre>{{ job.process_messages|default('No process messages available') }}</pre>
+                                {% else %}
+                                <pre>No process messages available</pre>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% if job.errors %}
+                        <tr class="title"><th>Errors</th></tr>
+                        <tr>
+                            <td>
+                                <pre class="error">{{ job.errors }}</pre>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                    <table>
+                        <tr class="title">
+                            <th>Element</th>
+                            <th>File</th>
+                            <th>Channel</th>
+                            <th>Material</th>
+                        </tr>
+                        {% for file_id, file, channel in job.list_files() %}
+                        <tr>
+                            <td>{{ file_id }}</td>
+                            <td>{{ file }}</td>
+                            <td>{{ channel|default('', not None) }}</td>
+                            <td>default</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    <br /><br />
+                    <table>
+                        <tr><th>Additional Arguments</th></tr>
+                        <tr>
+                            <td>
+                                <pre>{{ job.additional_args|default('- no additional parameters were provided -', not '') }}</pre>
+                            </td>
+                        </tr>
+                    </table>
+                </details>
             </div>
         {% endfor %}
         </div>

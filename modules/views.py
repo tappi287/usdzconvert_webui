@@ -42,14 +42,14 @@ def upload_files():
         return redirect(request.url)
     else:
         # --- Forward to current job page ---
-        App.logger.info('Upload succeeded for: %s', str(file_mgr.files))
         flash(message)
 
-        JobManager.add_job(
-            ConversionJob(file_mgr.job_dir, file_mgr.files, request.form.get(JobFormFields.additional_args))
-            )
+        job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
+        App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.id)
+        App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
+        JobManager.add_job(job)
 
-        return redirect(Urls.current_job)
+        return redirect(Urls.job_page)
 
 
 @App.route(Urls.ajax_upload, methods=['POST'])
@@ -71,31 +71,77 @@ def ajax_upload_file():
         return resp
 
 
-@App.route(Urls.current_job)
+@App.route(Urls.job_page)
 def job_page():
-    App.logger.info('Endpoint: %s', request.endpoint)
-    return render_template(Urls.templates[Urls.current_job], content=Site(), jobs=JobManager.jobs())
+    return render_template(Urls.templates[Urls.job_page], content=Site(), jobs=JobManager.get_jobs())
 
 
-@App.route(f'{Urls.job_download}/<job_id>', methods=['POST'])
+@App.route(f'{Urls.job_download}/<job_id>')
 def job_download(job_id):
-    App.logger.info('Download request for: %s', job_id)
-    job = [j for j in JobManager.jobs() if str(j.id) == str(job_id)]
+    job = JobManager.get_job_by_id(job_id)
+    App.logger.info('Received Download request for job_id: %s', job_id)
 
-    if job:
-        job = job[0]
-        return send_from_directory(job.job_dir.as_posix(), filename=job.file())
+    if job and job.download_filename():
+        App.logger.info('Serving with file: %s', job.download_filename())
+        return redirect(url_for('static', filename=job.download_filename()))
     else:
-        return redirect(Urls.current_job)
+        App.logger.info('Could not find job download file to serve: %s', job_id)
+        return redirect(Urls.job_page)
+
+
+@App.route(f'{Urls.job_delete}/<job_id>')
+def job_delete(job_id):
+    job = JobManager.get_job_by_id(job_id)
+    App.logger.info('Received deletion request for job_id: %s %s %s', job_id, job, job.completed)
+
+    msg = f'Could not delete job {job_id}. Unknown error.'
+
+    if job and job.completed:
+        if JobManager.remove_job(job_id):
+            msg = f'Job {job_id} successfully deleted.'
+    else:
+        if job and not job.completed:
+            msg = f'Job {job_id} is in process and can not be deleted.'
+        if not job:
+            App.logger.info('Could not find job: %s', job_id)
+            msg = f'Could not find job {job_id} you requested deletion for.'
+
+    flash(msg)
+    return redirect(Urls.job_page)
+
 
 @App.route(Urls.usd_man)
 def usd_manual():
     usd_man_path = Path(get_current_modules_dir()) / 'usd_man' / 'usdzconvert_manual.txt'
-    usd_man = 'No data available'
-    with open(usd_man_path, 'r') as f:
-        usd_man = f.read()
+    if usd_man_path.exists():
+        with open(usd_man_path, 'r') as f:
+            usd_man = f.read()
+    else:
+        usd_man = 'Could not find manual txt file.'
 
     return render_template(Urls.templates[Urls.usd_man], content=Site(), usd_manual=usd_man)
+
+
+@App.route(Urls.downloads)
+def static_downloads():
+    dl_dict = FileManager.list_downloads()
+    sorted_dls = sorted(dl_dict.items(), key=lambda x: x[1]['created'], reverse=True)  # Sort by date descending
+    return render_template(Urls.templates[Urls.downloads], content=Site(),
+                           downloads=sorted_dls)
+
+
+@App.route(f'{Urls.download_delete}/<download_folder_id>')
+def static_download_delete(download_folder_id):
+    dl_dict = FileManager.list_downloads()
+    dl = dl_dict.get(download_folder_id)
+    App.logger.info('Received deletion request for download: %s %s', download_folder_id, dl)
+    msg = f'Could not delete download {download_folder_id}/{dl.get("name")}'
+
+    if FileManager.delete_download(download_folder_id):
+        msg = f'Successfully deleted download {download_folder_id}/{dl.get("name")}'
+
+    flash(msg)
+    return redirect(Urls.downloads)
 
 
 def import_dummy():

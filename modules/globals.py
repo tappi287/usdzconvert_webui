@@ -6,6 +6,7 @@ from appdirs import user_data_dir, user_log_dir
 
 APP_NAME = 'usdz_webui'
 APP_FRIENDLY_NAME = 'usdzconvert_webui'
+OUT_SUFFIX = '.usdz'
 BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__ + '/..')))
 SETTINGS_DIR_NAME = APP_FRIENDLY_NAME
 

@@ -7,10 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ content.title }} - {% block title %}{% endblock %}</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='USD_Logo.png', version='1') }}">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato|Montserrat&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Inconsolata&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', version='28') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
     <script src="{{ url_for('static', filename='js/jquery-3.0.0.min.js') }}" type="text/javascript"></script>
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ url_for('static', filename='js')|tojson|safe }};
@@ -22,20 +23,40 @@
         <div id="form-main">
             <div id="form-div">
                 <!-- Title Area -->
+                <nav role="navigation">
+                    <div id="menuToggle">
+                        <input type="checkbox" />
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <ul id="menu">
+                        {% for title, url in content.urls.navigation.items() %}
+                            <a href="{{ url }}"><li>{{ title }}</li></a>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </nav>
+                <a href="/">
                 <img class="title-img" src="{{ url_for('static', filename='USD_Logo.svg', version='1') }}" width="46"
                      height="46"/>
-                <h3>{% block page_title %}{% endblock %}</h3>
-                {% block description %}{% endblock %}
+                </a>
+                <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
+                <div class="page-description">
+                    {% block description %}{% endblock %}
+                </div>
                 <!-- /Title Area -->
 
                 <!-- Message Area -->
                 {% with messages = get_flashed_messages() %}
                     {% if messages %}
-                       <ul class=flashes>
+                    <div class="server-message">
+                        <span> Server Message</span>
+                        <ul class=flashes>
                            {% for message in messages %}
                            <li>{{ message }}</li>
                            {% endfor %}
-                       </ul>
+                        </ul>
+                    </div>
                     {% endif %}
                 {% endwith %}
                 <!-- /Message Area -->

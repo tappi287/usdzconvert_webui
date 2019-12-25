@@ -69,7 +69,7 @@ class RunProcess(threading.Thread):
 
         # Prepare workers
         self.process = None
-        self.process_exitcode = None
+        self.process_exitcode = -1
 
         self.event = threading.Event()
 
@@ -82,14 +82,17 @@ class RunProcess(threading.Thread):
         self.event.clear()
 
         # Run in own thread to keep parent thread ready for abort signals
-        self._start_process()
+        if not self._start_process():
+            self.failed_callback('Process could not be started.')
+            return
 
         # Wait until process finished or aborted
         while not self.event.is_set():
             self.event.wait()
 
+        # Process result unsuccessful
         if self.process_exitcode != 0:
-            self.failed_callback()
+            self.failed_callback('Process returned with error code.')
             return
 
         # Exit successfully
@@ -102,10 +105,12 @@ class RunProcess(threading.Thread):
             _logger.info('Process started.')
         except Exception as e:
             _logger.error(e, exc_info=1)
+            return False
 
         # Log STDOUT in own thread to keep parent thread ready for abort signals
         log_thread = threading.Thread(target=self._process_log_loop)
         log_thread.start()
+        return True
 
     def _process_log_loop(self):
         """ Reads and writes process stdout to log until process ends """
