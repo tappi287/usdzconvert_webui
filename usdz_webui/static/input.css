@@ -1,0 +1,143 @@
+.checkbox-container {
+  display: block;
+  position: relative;
+  float: right;
+  /* padding-left: 35px; */
+  /* margin-bottom: 12px; */
+  cursor: pointer;
+  font-size: 22px;
+  user-select: none;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 18px;
+  width: 18px;
+  background: none;
+  border: 1px solid #3c3c3c;
+  transition: background 0.3s ease;
+}
+
+/* Hide the browser's default checkbox */
+.checkbox-container input {
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  background-color: #3498db;
+}
+
+/* When the checkbox is checked, add a blue background */
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
+
+/* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  opacity: 0;
+}
+
+/* Show the checkmark when checked */
+.checkbox-container input:checked ~ .checkmark:after {
+  opacity: 1;
+  transform: rotate(45deg);
+}
+
+/* Style the checkmark/indicator */
+.checkbox-container .checkmark:after {
+  left: 6.3px;
+  top: 2.5px;
+  width: 4px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(0deg);
+  transition: transform 0.3s ease,
+              opacity 0.3s ease;
+}
+
+/* Icons ---------------------------------- */
+.montform .file-field{
+	background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-upload-cloud.svg);
+	background-size: 30px 30px;
+	background-position: 3px -3px;
+	background-repeat: no-repeat;
+	float: right;
+}
+
+.montform .color-channel{
+    float: right;
+}
+
+.montform .file{
+    background-color: #fbfbfb;
+    border-radius: 5px;
+    padding: 5px 10px;
+    line-height: 22px;
+    display: block;
+    margin: 1em 0;
+}
+
+.montform .file span.description{
+    font-size: small;
+}
+
+.montform  #name:focus{
+	background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-address-book.svg);
+	background-size: 30px 30px;
+	background-position: 8px 5px;
+    background-position: 11px 8px;
+	background-repeat: no-repeat;
+}
+
+.montform #commands{
+	background-position: 11px 8px;
+	background-repeat: no-repeat;
+    padding: 0;
+    outline: none;
+}
+
+.montform  textarea {
+    width: 100%;
+    height: 46px;
+    line-height: 22px;
+    resize:vertical;
+}
+
+.montform  input:hover, .montform  input:focus, .montform  textarea:focus {
+    /* background-color:#e6e6e6; */
+    color: rgb(12, 70, 136)
+}
+
+.montform {
+  color:#3c3c3c;
+}
+
+.montform .feedback-input {
+  font-weight:500;
+border-radius: 0;
+padding: 0 0 0 40px;
+border: 3px solid rgba(0,0,0,0);
+}
+
+.montform  .submit:hover {
+	color: #3498db;
+}
+	
+.ease {
+	width: 0px;
+	height: 74px;
+	background-color: #fbfbfb;
+	transition: .3s ease;
+}
+
+.submit:hover .ease{
+  width:100%;
+  background-color:white;
+}

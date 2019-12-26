@@ -64,13 +64,16 @@
         <details id="options">
             <summary>Options</summary>
             {% for option_field in content.job_form.option_fields %}
-                <p class="file">
+                <div class="file">
                     <label>
                         {{ option_field.label }}
                         {% if option_field.input_type == 'textarea' %}
                             <input name="{{ option_field.id }}" type="text" class="color-channel" />
                         {% elif option_field.input_type == 'checkbox' %}
-                            <input name="{{ option_field.id }}" type="checkbox" class="color-channel" />
+                            <div class="checkbox-container">
+                                <input name="{{ option_field.id }}" type="checkbox"/>
+                                <span class="checkmark"></span>
+                            </div>
                         {% elif option_field.input_type == 'float' %}
                             <input name="{{ option_field.id }}" type="number" step="any"  min="0" class="color-channel" />
                         {% elif option_field.input_type == 'url' %}
@@ -79,7 +82,7 @@
                         <br />
                     </label>
                     <span class="description">{{ option_field.desc|e }}</span>
-                </p>
+                </div>
             {% endfor %}
         </details>
 

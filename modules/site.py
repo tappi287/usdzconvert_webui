@@ -56,13 +56,13 @@ class Urls:
     usd_man = '/usd_manual'
     downloads = '/downloads'
     download_delete = '/downloads/delete'
-    ajax_upload = '/ajax_upload'
     static_downloads = 'static/downloads'
+    about = '/about'
 
-    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads}
+    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads, 'about': about}
 
     templates = {root: 'index.html.j2', job_page: 'job.html.j2', usd_man: 'usdman.html.j2',
-                 downloads: 'downloads.html.j2'}
+                 downloads: 'downloads.html.j2', about: 'about.html.j2'}
 
 
 class Site:

@@ -52,25 +52,6 @@ def upload_files():
         return redirect(Urls.job_page)
 
 
-@App.route(Urls.ajax_upload, methods=['POST'])
-def ajax_upload_file():
-    if request.method != 'POST':
-        return
-
-    App.logger.info('Processing Ajax request for files: %s', request.files)
-    file_mgr = FileManager()
-    result, message = file_mgr.handle_post_request(request.files, request.form)
-
-    if result:
-        resp = jsonify({'message': message, 'size': 4000})
-        resp.status_code = 201
-        return resp
-    else:
-        resp = jsonify({'message': message})
-        resp.status_code = 400
-        return resp
-
-
 @App.route(Urls.job_page)
 def job_page():
     return render_template(Urls.templates[Urls.job_page], content=Site(), jobs=JobManager.get_jobs())
@@ -110,18 +91,6 @@ def job_delete(job_id):
     return redirect(Urls.job_page)
 
 
-@App.route(Urls.usd_man)
-def usd_manual():
-    usd_man_path = Path(get_current_modules_dir()) / 'usd_man' / 'usdzconvert_manual.txt'
-    if usd_man_path.exists():
-        with open(usd_man_path, 'r') as f:
-            usd_man = f.read()
-    else:
-        usd_man = 'Could not find manual txt file.'
-
-    return render_template(Urls.templates[Urls.usd_man], content=Site(), usd_manual=usd_man)
-
-
 @App.route(Urls.downloads)
 def static_downloads():
     dl_dict = FileManager.list_downloads()
@@ -142,6 +111,23 @@ def static_download_delete(download_folder_id):
 
     flash(msg)
     return redirect(Urls.downloads)
+
+
+@App.route(Urls.usd_man)
+def usd_manual():
+    usd_man_path = Path(get_current_modules_dir()) / 'usd_man' / 'usdzconvert_manual.txt'
+    if usd_man_path.exists():
+        with open(usd_man_path, 'r') as f:
+            usd_man = f.read()
+    else:
+        usd_man = 'Could not find manual txt file.'
+
+    return render_template(Urls.templates[Urls.usd_man], content=Site(), usd_manual=usd_man)
+
+
+@App.route(Urls.about)
+def about():
+    return render_template(Urls.templates[Urls.about], content=Site())
 
 
 def import_dummy():
