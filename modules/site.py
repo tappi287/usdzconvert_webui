@@ -58,10 +58,11 @@ class Urls:
     download_delete = '/downloads/delete'
     static_downloads = 'static/downloads'
     about = '/about'
+    log = '/log'
 
     navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads, 'about': about}
 
-    templates = {root: 'index.html.j2', job_page: 'job.html.j2', usd_man: 'usdman.html.j2',
+    templates = {root: 'index.html.j2', job_page: 'job.html.j2', usd_man: 'usdman.html.j2', log: 'log.html.j2',
                  downloads: 'downloads.html.j2', about: 'about.html.j2'}
 
 

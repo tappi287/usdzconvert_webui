@@ -1,0 +1,29 @@
+{% extends "base.html.j2" %}
+{% block title %}Log{% endblock %}
+{% block head %}
+    {{ super() }}
+     <style>
+        div#form-div {
+            max-width: none;
+            width: 96%;
+            padding-left: 1%;
+            padding-right: 1%;
+        }
+    </style>
+{% endblock %}
+
+{% block page_title %}
+    {{ content.title }}
+{% endblock %}
+
+{% block description %}
+    <p>Log file contents</p>
+{% endblock %}
+
+{% block content %}
+    <div class="montform">
+        <div class="file">
+            <pre>{{ log|e }}</pre>
+        </div>
+    </div>
+{% endblock content %}

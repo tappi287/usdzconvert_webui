@@ -48,7 +48,6 @@ def _create_usd_env(base_dir: Path) -> dict:
     pyp = base / 'lib' / 'python'
     ld_lib = base / 'lib64'  # linux specific
 
-
     embree_deps = deps / 'embree'
     python_deps = deps / 'python'
     usdview_deps = deps / 'usdview-deps'
@@ -101,16 +100,16 @@ def usd_env() -> dict:
 def create_usdzconvert_arguments(args: list) -> list:
     """ Create arguments and environment to run usdzconvert with configured local python 2.7 interpreter """
     usdz_converter_path = Path(App.config.get('USDZ_CONVERTER_PATH'))
+    win_interpreter_path = Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
+
     if not usdz_converter_path.is_absolute():
         usdz_converter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_PATH'))
-
-    py_path = Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
-    if not py_path.is_absolute():
-        py_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
+    if not win_interpreter_path.is_absolute():
+        win_interpreter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
 
     if sys.platform == 'win32':
         # python.exe usdzconvert
-        arguments = [py_path.absolute(), usdz_converter_path.absolute()]
+        arguments = [win_interpreter_path.absolute(), usdz_converter_path.absolute()]
     else:
         # python usdzconvert
         arguments = ['python', usdz_converter_path.absolute()]

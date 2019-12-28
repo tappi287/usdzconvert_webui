@@ -161,7 +161,8 @@ details#image-maps > summary, details#options > summary {
     background-color: tomato;
 }
 .button-red:hover {
-    background-color: red;
+	background-color: rgba(0,0,0,0);
+    color: red;
 }
 
 .button-blue:hover{

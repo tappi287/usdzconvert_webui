@@ -4,7 +4,7 @@ from flask import flash, redirect, render_template, request, jsonify, url_for, s
 
 from app import App
 from modules.file_mgr import FileManager
-from modules.globals import get_current_modules_dir
+from modules.globals import get_current_modules_dir, LOG_FILE_PATH
 from modules.job import ConversionJob, JobManager
 from modules.site import Site, JobFormFields, Urls
 
@@ -123,6 +123,17 @@ def usd_manual():
         usd_man = 'Could not find manual txt file.'
 
     return render_template(Urls.templates[Urls.usd_man], content=Site(), usd_manual=usd_man)
+
+@App.route(Urls.log)
+def log():
+    log_file_path = Path(LOG_FILE_PATH)
+    if log_file_path.exists():
+        with open(log_file_path, 'r') as f:
+            log_content = f.read()
+    else:
+        log_content = 'Could not locate log file.'
+
+    return render_template(Urls.templates[Urls.log], content=Site(), log=log_content)
 
 
 @App.route(Urls.about)
