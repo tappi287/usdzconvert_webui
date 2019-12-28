@@ -2,4 +2,7 @@
 /usdz_webui/upload/
 /.idea/
 /.vscode/
+/__pycache__/
 /usdz_webui/static/downloads/**
+/converter/
+*.pyc

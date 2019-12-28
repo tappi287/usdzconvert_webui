@@ -185,7 +185,7 @@ details#image-maps > summary, details#options > summary {
     font-size: 0.8em;
     border: none;
     padding: 5px;
-    margin: 0;
+    margin: 0 0 0 5px;
 }
 
 .downloads th, .downloads td {

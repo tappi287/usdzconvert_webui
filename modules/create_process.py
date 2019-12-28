@@ -19,11 +19,12 @@ NORMAL_PRIORITY_CLASS = 0x00000020
 REALTIME_PRIORITY_CLASS = 0x00000100
 
 
-def _create_process(arguments: Union[str, Iterable], current_working_directory: Path):
+def _create_process(arguments: Union[str, Iterable], current_working_directory: Path, env=None):
     _logger.debug('Running command line with arguments:\n%s\nIn cwd: %s', arguments, current_working_directory)
 
     my_env = dict()
     my_env.update(os.environ)
+    my_env.update(env or dict())
 
     process = sp.Popen(arguments, cwd=current_working_directory.as_posix(),
                        env=my_env, stdout=sp.PIPE, stderr=sp.STDOUT,
@@ -50,12 +51,15 @@ def log_subprocess_output(pipe, message_callback):
 
 class RunProcess(threading.Thread):
     def __init__(self, args, cwd: Path,
+                 # optional OS enironment
+                 env: dict = None,
                  # Callbacks
                  finished_callback=None, failed_callback=None, status_callback=None):
         super(RunProcess, self).__init__()
 
         self.args = args
         self.cwd: Path = cwd
+        self.env = env or dict()
 
         # -- Prepare callbacks
         self.finished_callback = self.failed_callback = self.status_callback = self._dummy_callback
@@ -101,7 +105,7 @@ class RunProcess(threading.Thread):
     def _start_process(self):
         """ Start process and log to file and stdout """
         try:
-            self.process = _create_process(self.args, self.cwd)
+            self.process = _create_process(self.args, self.cwd, self.env)
             _logger.info('Process started.')
         except Exception as e:
             _logger.error(e, exc_info=1)

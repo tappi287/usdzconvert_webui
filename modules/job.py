@@ -9,6 +9,7 @@ from modules.create_process import RunProcess
 from modules.file_mgr import FileManager
 from modules.globals import get_current_modules_dir
 from modules.log import setup_logger
+from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env
 from modules.site import Urls, JobFormFields
 
 _logger = setup_logger(__name__)
@@ -71,6 +72,7 @@ class ConversionJob:
 
     def message_updates(self, msg):
         self.process_messages += msg
+        self.progress = min(self.progress, self.progress + 15)
 
     def download_filename(self) -> Union[None, str]:
         if self.out_file.exists() and self.completed:
@@ -172,9 +174,6 @@ class JobManager:
     def create_job_arguments(job: ConversionJob) -> list:
         args = list()
 
-        # Add binary argument
-        args.append(Path(Path(get_current_modules_dir()) / 'instance' / 'example.bat').as_posix())
-
         # Add texture maps file arguments
         for file_id, file_entry in job.files.items():
             file_path = Path(file_entry.get("file_path"))
@@ -209,10 +208,10 @@ class JobManager:
             return
 
         cls._current_job = job
-        job_arguments = cls.create_job_arguments(job)
+        job_arguments = create_usdzconvert_arguments(cls.create_job_arguments(job))
         job.set_in_progress()
 
-        process_thread = RunProcess(job_arguments, job.job_dir,
+        process_thread = RunProcess(job_arguments, job.job_dir, usd_env(),
                                     cls.job_finished, cls.job_failed, job.message_updates)
         process_thread.start()
 
