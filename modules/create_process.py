@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess as sp
 import threading
 import locale
@@ -26,9 +27,13 @@ def _create_process(arguments: Union[str, Iterable], current_working_directory: 
     my_env.update(os.environ)
     my_env.update(env or dict())
 
-    process = sp.Popen(arguments, cwd=current_working_directory.as_posix(),
-                       env=my_env, stdout=sp.PIPE, stderr=sp.STDOUT,
-                       creationflags=IDLE_PRIORITY_CLASS)
+    if sys.platform == 'win32':
+        process = sp.Popen(arguments, cwd=current_working_directory.as_posix(),
+                           env=my_env, stdout=sp.PIPE, stderr=sp.STDOUT,
+                           creationflags=IDLE_PRIORITY_CLASS)
+    else:
+        process = sp.Popen(arguments, cwd=current_working_directory.as_posix(),
+                           env=my_env, stdout=sp.PIPE, stderr=sp.STDOUT)
 
     return process
 

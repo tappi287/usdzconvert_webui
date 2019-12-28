@@ -21,6 +21,11 @@ def get_settings_dir() -> str:
 
 
 def get_log_dir() -> str:
+    log_dir = user_log_dir(SETTINGS_DIR_NAME, '')
+    setting_dir = os.path.abspath(os.path.join(log_dir, '../'))
+    # Create <app-name>
+    _check_and_create_dir(setting_dir)
+    # Create <app-name>/log
     return _check_and_create_dir(user_log_dir(SETTINGS_DIR_NAME, ''))
 
 

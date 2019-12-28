@@ -1,5 +1,6 @@
 import os
-from pathlib import Path, WindowsPath
+import sys
+from pathlib import Path
 
 from app import App
 from modules.globals import get_current_modules_dir
@@ -12,11 +13,11 @@ def _update_path_string(env: dict, key: str, new_path: Path):
     env_path_string = env.get(key, '')
     _logger.debug(f'Extending {key} with {new_path}')
     if not env_path_string:
-        env[key] = f'{WindowsPath(new_path.absolute())};'
-    elif env_path_string[-1:] == ';':
-        env[key] = f'{env_path_string}{WindowsPath(new_path.absolute())};'
+        env[key] = f'{new_path.absolute().as_posix()}{os.pathsep}'
+    elif env_path_string[-1:] == os.pathsep:
+        env[key] = f'{env_path_string}{new_path.absolute().as_posix()}{os.pathsep}'
     else:
-        env[key] = f'{env_path_string};{WindowsPath(new_path.absolute())};'
+        env[key] = f'{env_path_string}{os.pathsep}{new_path.absolute().as_posix()}{os.pathsep}'
 
 
 def _create_usd_env(base_dir: Path) -> dict:
@@ -30,11 +31,23 @@ def _create_usd_env(base_dir: Path) -> dict:
                 /USD/deps/python    [builtin Python 2.7 interpreter]
                 /USD/deps           [binary dependencies]
                 /USD/lib            [pre-build Windows dependencies]
+
+        Linux prerequisites:
+            libGLU.so
+            sudo apt install libglu1-mesa
+            libpython2.7.so
+            sudo apt install libpython2.7
+
+        Python modules required to run usdzconvert:
+            numpy
+            Pillow [optional] - for image conversion inside usdzconvert
     """
     base = base_dir
     deps = base / 'deps'
     libp = base / 'lib'
     pyp = base / 'lib' / 'python'
+    ld_lib = base / 'lib64'  # linux specific
+
 
     embree_deps = deps / 'embree'
     python_deps = deps / 'python'
@@ -51,15 +64,23 @@ def _create_usd_env(base_dir: Path) -> dict:
         _logger.error('Could not locate USD binaries base directory.')
         return env
 
+    # Update LD_LIBRARY_PATH
+    if ld_lib.exists():
+        _update_path_string(env, 'LD_LIBRARY_PATH', ld_lib)
+
     # Update PYTHONPATH
     for p in (pyp, usdview_python_deps, usdz_python_path):
         if p.exists():
             _update_path_string(env, 'PYTHONPATH', p)
+        else:
+            _logger.error('Could not add non-existing dir to PYTHONPATH: %s', p.as_posix())
 
     # Update PATH
     for p in (python_deps, libp, usdview_deps, embree_deps):
         if p.exists():
             _update_path_string(env, 'PATH', p)
+        else:
+            _logger.error('Could not add non-existing dir to PATH: %s', p.as_posix())
 
     return env
 
@@ -79,17 +100,20 @@ def usd_env() -> dict:
 
 def create_usdzconvert_arguments(args: list) -> list:
     """ Create arguments and environment to run usdzconvert with configured local python 2.7 interpreter """
-    py_path = Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
-
-    if not py_path.is_absolute():
-        py_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
-
     usdz_converter_path = Path(App.config.get('USDZ_CONVERTER_PATH'))
     if not usdz_converter_path.is_absolute():
         usdz_converter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_PATH'))
 
-    # python.exe usdzconvert
-    arguments = [WindowsPath(py_path.absolute()), WindowsPath(usdz_converter_path.absolute())]
+    py_path = Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
+    if not py_path.is_absolute():
+        py_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
+
+    if sys.platform == 'win32':
+        # python.exe usdzconvert
+        arguments = [py_path.absolute(), usdz_converter_path.absolute()]
+    else:
+        # python usdzconvert
+        arguments = ['python', usdz_converter_path.absolute()]
 
     for arg in args:
         arguments.append(arg)
