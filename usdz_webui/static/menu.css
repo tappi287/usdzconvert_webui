@@ -13,6 +13,7 @@
  {
    display: block;
    position: absolute;
+   margin-left: 20%;  /* Make sure not to block home img href on mobile */
    right: 35px;
    
    z-index: 1;
@@ -20,6 +21,13 @@
    -webkit-user-select: none;
    user-select: none;
  }
+
+ /*Styles for small screens*/
+@media  only screen and (max-width: 580px) {
+	#menuToggle input:checked ~ ul{
+		background: rgba(0, 0, 0, 0.8)
+	}
+}
  
  #menuToggle a
  {

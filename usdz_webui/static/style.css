@@ -122,11 +122,16 @@ table {
 td, th {
 	border: none;
 	text-align: left;
-	padding: 4px;
+    padding: 2px 4px;
+    word-break: break-word;
 }
 
 tr.title th {
 	background-color: rgb(171, 191, 210);
+}
+
+progress {
+    max-width: 40%;
 }
 
 details > summary {
@@ -214,12 +219,8 @@ details#image-maps > summary, details#options > summary {
 
 @media  only screen and (max-width: 580px) {
 	#form-div{
-		left: 3%;
-		margin-right: 3%;
-		width: 88%;
-		margin-left: 0;
-		padding-left: 3%;
-		padding-right: 3%;
+		width: 100%;
+        padding: 25px 5px;
 	}
 }
 
