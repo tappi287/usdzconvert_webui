@@ -72,14 +72,14 @@ def _create_usd_env(base_dir: Path) -> dict:
         if p.exists():
             _update_path_string(env, 'PYTHONPATH', p)
         else:
-            _logger.error('Could not add non-existing dir to PYTHONPATH: %s', p.as_posix())
+            _logger.debug('Could not add non-existing dir to PYTHONPATH: %s', p.as_posix())
 
     # Update PATH
     for p in (python_deps, libp, usdview_deps, embree_deps):
         if p.exists():
             _update_path_string(env, 'PATH', p)
         else:
-            _logger.error('Could not add non-existing dir to PATH: %s', p.as_posix())
+            _logger.debug('Could not add non-existing dir to PATH: %s', p.as_posix())
 
     return env
 

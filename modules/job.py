@@ -1,10 +1,11 @@
 import os
 from pathlib import Path
-from typing import Iterator, Union
+from typing import Iterator, Union, Tuple
 
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 
+from app import App, db
 from modules.create_process import RunProcess
 from modules.file_mgr import FileManager
 from modules.globals import get_current_modules_dir
@@ -14,9 +15,26 @@ from modules.site import Urls, JobFormFields
 
 _logger = setup_logger(__name__)
 
+# set up a scoped_session
+from flask_sqlalchemy import orm
 
-class ConversionJob:
-    id_count = 0
+session_factory = orm.sessionmaker(bind=db.engine)
+Session = orm.scoped_session(session_factory)
+
+
+class ConversionJob(db.Model):
+    __tablename__ = 'jobs'
+
+    job_id = db.Column(db.Integer, primary_key=True)
+    files = db.Column(db.PickleType)
+    option_args = db.Column(db.PickleType)
+    additional_args = db.Column(db.String(120))
+    state = db.Column(db.Integer)
+    progress = db.Column(db.Integer)
+    completed = db.Column(db.Boolean)
+    is_current = db.Column(db.Boolean)
+    process_messages = db.Column(db.String(1000))
+    errors = db.Column(db.String(200))
 
     class States:
         queued = 0
@@ -28,8 +46,9 @@ class ConversionJob:
                    States.finished: 'finished', States.failed: 'failed'}
 
     def __init__(self, job_dir: Path, files: dict, form: ImmutableMultiDict):
-        self.job_dir = job_dir
         self.files = files
+        self.files['job_dir'] = {'file_path': job_dir}
+
         self.option_args = self.create_options(form)
         self.additional_args = form.get(JobFormFields.additional_args, '')
 
@@ -39,9 +58,6 @@ class ConversionJob:
 
         self.process_messages = str()
         self.errors = str()
-
-        ConversionJob.id_count += 1
-        self.id = ConversionJob.id_count
 
     def create_options(self, form: ImmutableMultiDict) -> list:
         option_args = list()
@@ -58,49 +74,40 @@ class ConversionJob:
 
         return option_args
 
-    @property
+    def job_dir(self) -> Path:
+        return self.files.get('job_dir', dict()).get('file_path', Path('.'))
+
     def out_file(self) -> Path:
         return self.files.get('out_file', dict()).get('file_path', Path('.'))
 
-    @out_file.setter
-    def out_file(self, val: Path):
+    def set_out_file(self, val: Path):
         self.files['out_file']['file_path'] = val
+
+        # Force a database update of PickeldType by reassigning the value
+        ConversionJob.query.filter_by(job_id=self.job_id).update(dict(files=self.files))
 
     def list_files(self) -> Iterator[str]:
         for file_id, file_entry in self.files.items():
-            yield file_id, file_entry.get("file_path").name, file_entry.get("use_channel")
+            p = file_entry.get("file_path")
+            shortend_file_name = p if len(p.as_posix()) < 68 else f'...{p.as_posix()[-65:]}'
+            yield file_id, shortend_file_name, file_entry.get("use_channel")
 
-    def message_updates(self, msg):
-        self.process_messages += msg
+    def message_update(self, msg):
+        self.process_messages += f'{msg}\n'
         self.progress = min(self.progress, self.progress + 15)
 
     def download_filename(self) -> Union[None, str]:
-        if self.out_file.exists() and self.completed:
+        if self.out_file().exists() and self.completed:
             return f'{os.path.split(Urls.static_downloads)[1]}/' \
-                   f'{secure_filename(self.job_dir.name)}/{self.out_file.name}'
+                   f'{secure_filename(self.job_dir().name)}/{self.out_file().name}'
 
     def direct_download_url(self) -> Union[None, str]:
-        if self.out_file.exists() and self.completed:
+        if self.out_file().exists() and self.completed:
             return f'{Urls.static_downloads}/' \
-                   f'{secure_filename(self.job_dir.name)}/{self.out_file.name}'
+                   f'{secure_filename(self.job_dir().name)}/{self.out_file().name}'
 
     def get_state(self) -> str:
         return self.state_names.get(self.state, 'No job state set')
-
-    def set_complete(self):
-        # Move Job file to static, public available, directory
-        static_file_path = FileManager.move_to_static_dir(self.out_file, self.job_dir.name)
-
-        if static_file_path is None:
-            _logger.error('Could not move final Job file. Setting job failed.')
-            self.set_failed('Could not move USDZ to static directory.')
-            return
-
-        _logger.info('Moved Job result file to static directory: %s', static_file_path)
-        self.out_file = static_file_path
-        self.state = self.States.finished
-        self.completed = True
-        self.progress = 100
 
     def set_error(self, error_message: str):
         self.errors = error_message
@@ -109,6 +116,27 @@ class ConversionJob:
         self.state = self.States.in_progress
         self.progress = 5
 
+    def set_current(self, is_current: bool):
+        self.is_current = is_current
+
+    def set_complete(self):
+        # Move Job file to static, public available, directory
+        static_file_path = FileManager.move_to_static_dir(self.out_file(), self.job_dir().name)
+
+        if static_file_path is None:
+            _logger.error('Could not move final Job file. Setting job failed.')
+            self.set_failed('Could not move USDZ to static directory.')
+            return
+
+        _logger.info('Moved Job result file to static directory: %s', static_file_path)
+
+        self.set_out_file(static_file_path)
+        self.state = self.States.finished
+        self.completed = True
+        self.progress = 100
+
+        self.set_current(False)
+
     def set_failed(self, error_msg: str = ''):
         self.state = self.States.failed
         self.completed = True
@@ -116,65 +144,54 @@ class ConversionJob:
             self.set_error(error_msg)
         self.progress = 0
 
+        self.set_current(False)
+
 
 class JobManager:
-    _current_job: Union[None, ConversionJob] = None
-    _queue = list()
-    _jobs = list()
+    @staticmethod
+    def get_jobs() -> Iterator[ConversionJob]:
+        return ConversionJob.query.all()
+
+    @staticmethod
+    def get_job_by_id(_id: int) -> Union[None, ConversionJob]:
+        if isinstance(_id, str) and _id.isdigit():
+            _id = int(_id)
+
+        return ConversionJob.query.get(_id)
+
+    @staticmethod
+    def _get_next_job() -> Union[None, ConversionJob]:
+        return ConversionJob.query.filter_by(completed=False).first()
+
+    @staticmethod
+    def current_job() -> ConversionJob:
+        current_job = ConversionJob.query.filter_by(is_current=True).first()
+        if current_job:
+            return current_job
+        return ConversionJob(Path(), dict(), ImmutableMultiDict())
 
     @classmethod
-    def get_jobs(cls) -> Iterator[ConversionJob]:
-        return cls._jobs
+    def remove_job(cls, job_id: int) -> Tuple[bool, str]:
+        with App.app_context():
+            job = cls.get_job_by_id(job_id)
 
-    @classmethod
-    def current_job(cls) -> Union[None, ConversionJob]:
-        if cls.current_job:
-            return cls._current_job
+            if job and job.completed:
+                db.session.delete(job)
+                db.session.commit()
+                _logger.debug('Deleted job: %s', job_id)
+                return True, f'Job {job_id} successfully deleted.'
+            elif not job.completed:
+                return False, f'Job {job_id} is in process and can not be deleted.'
+            elif not job:
+                return False, f'Could not find job {job_id} you requested deletion for.'
 
-    @classmethod
-    def add_job(cls, job: ConversionJob):
-        if job in cls._queue or job is cls._current_job:
-            return
-
-        cls._jobs.append(job)
-
-        cls._queue.append(job)
-        job.state = job.States.queued
-
-        if not cls._current_job or cls._current_job.completed:
-            cls.run_job_queue()
-
-    @classmethod
-    def remove_job(cls, job_id) -> bool:
-        for job in cls.get_jobs():
-            _logger.debug('Mgr iterating job: %s', job.id)
-            if str(job.id) == str(job_id):
-                _logger.debug('Deleting job: %s', job_id)
-                cls._jobs.remove(job)
-                del job
-                return True
-
-        return False
-
-    @classmethod
-    def _get_next_job(cls) -> Union[None, ConversionJob]:
-        if cls._queue:
-            return cls._queue.pop(0)
-        return None
-
-    @classmethod
-    def get_job_by_id(cls, job_id) -> Union[None, ConversionJob]:
-        for job in cls.get_jobs():
-            if str(job_id) == str(job.id):
-                return job
-        else:
-            return
+        return False, f'Could not delete job {job_id}. Unknown error.'
 
     @staticmethod
     def create_job_arguments(job: ConversionJob) -> list:
         args = list()
+        valid_texture_map_ids = [f.id for f in JobFormFields.file_fields]
 
-        # Add texture maps file arguments
         for file_id, file_entry in job.files.items():
             file_path = Path(file_entry.get("file_path"))
 
@@ -182,6 +199,10 @@ class JobManager:
                 args.append(file_path.as_posix())  # inputFile/outputFile arguments
                 continue
 
+            if file_id not in valid_texture_map_ids:
+                continue
+
+            # Add texture maps file arguments
             args.append(f'-{file_id}')
 
             channel = file_entry.get('use_channel')
@@ -203,26 +224,38 @@ class JobManager:
 
     @classmethod
     def run_job_queue(cls):
-        job = cls._get_next_job()
-        if not job:
-            return
+        with App.app_context():
+            job = cls._get_next_job()
+            if not job:
+                return
+            job.set_current(True)
+            job.set_in_progress()
+            job_arguments = create_usdzconvert_arguments(cls.create_job_arguments(job))
+            job_dir = job.job_dir()
+            db.session.commit()
 
-        cls._current_job = job
-        job_arguments = create_usdzconvert_arguments(cls.create_job_arguments(job))
-        job.set_in_progress()
-
-        process_thread = RunProcess(job_arguments, job.job_dir, usd_env(),
-                                    cls.job_finished, cls.job_failed, job.message_updates)
+        process_thread = RunProcess(job_arguments, job_dir, usd_env(),
+                                    cls._finished_callback, cls._failed_callback, cls._message_callback)
         process_thread.start()
 
     @classmethod
-    def job_failed(cls, error: str):
-        _logger.info('Job processing failed: %s', error)
-        cls.current_job().set_failed(error)
-        cls.run_job_queue()
+    def _failed_callback(cls, error: str):
+        with App.app_context():
+            _logger.info('Job processing failed: %s', error)
+            cls.current_job().set_failed(error)
+            db.session.commit()
+            cls.run_job_queue()
 
     @classmethod
-    def job_finished(cls):
-        _logger.info('Job finished.')
-        cls.current_job().set_complete()
-        cls.run_job_queue()
+    def _finished_callback(cls):
+        with App.app_context():
+            _logger.info('Job finished.')
+            cls.current_job().set_complete()
+            db.session.commit()
+            cls.run_job_queue()
+
+    @classmethod
+    def _message_callback(cls, message):
+        with App.app_context():
+            cls.current_job().message_update(message)
+            db.session.commit()

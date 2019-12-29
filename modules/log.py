@@ -46,7 +46,7 @@ def setup_logging(run_method=False, app=None) -> QueueListener:
                 },
             'file': {
                 'level'    : 'DEBUG', 'class': 'logging.handlers.RotatingFileHandler',
-                'filename' : LOG_FILE_PATH.absolute().as_posix(), 'maxBytes': 1500, 'backupCount': 3,
+                'filename' : LOG_FILE_PATH.absolute().as_posix(), 'maxBytes': 415000, 'backupCount': 3,
                 'formatter': 'file_formatter',
                 },
             'queue_handler': {

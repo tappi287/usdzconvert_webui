@@ -24,9 +24,19 @@ class FileManager:
         self.files = dict()
 
     @classmethod
-    def clear_upload_folder(cls) -> bool:
+    def clear_upload_folders(cls, jobs) -> bool:
         upload_dir: Path = App.config.get('UPLOAD_FOLDER')
-        return cls.clear_folder(upload_dir)
+        active_job_dirs = [j.job_dir() for j in jobs if not j.completed]
+
+        if active_job_dirs:
+            _logger.info('Not touching active jobs dirs during clean-up: %s', active_job_dirs)
+        
+        sucess = True
+        for p in upload_dir.glob('*'):
+            if p not in active_job_dirs:
+                sucess = False if not cls.clear_folder(p) else sucess
+
+        return sucess
 
     @staticmethod
     def clear_folder(folder: Path, re_create: bool = True) -> bool:

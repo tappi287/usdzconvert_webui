@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flask import flash, redirect, render_template, request, jsonify, url_for, send_from_directory
 
-from app import App
+from app import App, db
 from modules.file_mgr import FileManager
 from modules.globals import get_current_modules_dir, LOG_FILE_PATH
 from modules.job import ConversionJob, JobManager
@@ -11,10 +11,12 @@ from modules.site import Site, JobFormFields, Urls
 
 @App.before_first_request
 def _clean_uploads():
-    if FileManager.clear_upload_folder():
-        App.logger.info('Clean Upload folder created @ %s', App.config.get('UPLOAD_FOLDER'))
-    else:
-        App.logger.info('Could not create clean upload folder @ %s', App.config.get('UPLOAD_FOLDER'))
+    with App.app_context():
+        jobs = JobManager.get_jobs()
+        if FileManager.clear_upload_folders(jobs):
+            App.logger.info('Clean Upload folder created @ %s', App.config.get('UPLOAD_FOLDER'))
+        else:
+            App.logger.info('Could not create clean upload folder @ %s', App.config.get('UPLOAD_FOLDER'))
 
 
 @App.route(Urls.root)
@@ -44,10 +46,15 @@ def upload_files():
         # --- Forward to current job page ---
         flash(message)
 
-        job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
-        App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.id)
-        App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
-        JobManager.add_job(job)
+        with App.app_context():
+            job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
+            App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.job_id)
+            App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
+
+            db.session.add(job)
+            db.session.commit()
+
+        JobManager.run_job_queue()
 
         return redirect(Urls.job_page)
 
@@ -72,21 +79,8 @@ def job_download(job_id):
 
 @App.route(f'{Urls.job_delete}/<job_id>')
 def job_delete(job_id):
-    job = JobManager.get_job_by_id(job_id)
-    App.logger.info('Received deletion request for job_id: %s %s %s', job_id, job, job.completed)
-
-    msg = f'Could not delete job {job_id}. Unknown error.'
-
-    if job and job.completed:
-        if JobManager.remove_job(job_id):
-            msg = f'Job {job_id} successfully deleted.'
-    else:
-        if job and not job.completed:
-            msg = f'Job {job_id} is in process and can not be deleted.'
-        if not job:
-            App.logger.info('Could not find job: %s', job_id)
-            msg = f'Could not find job {job_id} you requested deletion for.'
-
+    App.logger.info('Received deletion request for job_id: %s', job_id)
+    result, msg = JobManager.remove_job(job_id)
     flash(msg)
     return redirect(Urls.job_page)
 
