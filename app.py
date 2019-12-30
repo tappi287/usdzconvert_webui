@@ -18,6 +18,7 @@ db = SQLAlchemy(App)
 
 from modules import views
 views.import_dummy()  # Keep the IDE from deleting the import
+db.create_all()
 
 log_listener = setup_logging(app=App)
 log_listener.start()

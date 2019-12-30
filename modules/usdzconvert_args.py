@@ -31,6 +31,9 @@ def _create_usd_env(base_dir: Path) -> dict:
                 /USD/deps/python    [builtin Python 2.7 interpreter]
                 /USD/deps           [binary dependencies]
                 /USD/lib            [pre-build Windows dependencies]
+            Custom USD build specific tree:
+                /USD/bin            [boost libraries etc.]
+                /USD/plugin/usd     [usdAbc Alembic plugin]
 
         Linux prerequisites:
             libGLU.so
@@ -42,16 +45,22 @@ def _create_usd_env(base_dir: Path) -> dict:
             numpy
             Pillow [optional] - for image conversion inside usdzconvert
     """
-    base = base_dir
-    deps = base / 'deps'
-    libp = base / 'lib'
-    pyp = base / 'lib' / 'python'
-    ld_lib = base / 'lib64'  # linux specific
+    _base = base_dir
+    _dep = _base / 'deps'
 
-    embree_deps = deps / 'embree'
-    python_deps = deps / 'python'
-    usdview_deps = deps / 'usdview-deps'
-    usdview_python_deps = deps / 'usdview-deps-python'
+    # USD specific
+    libp = _base / 'lib'
+    pyp = _base / 'lib' / 'python'
+    ubin = _base / 'bin'
+    uplg = _base / 'plugin' / 'usd'
+
+    ld_lib = _base / 'lib64'  # linux specific
+
+    # USD View specific
+    embree_deps = _dep / 'embree'
+    python_deps = _dep / 'python'
+    usdview_deps = _dep / 'usdview-deps'
+    usdview_python_deps = _dep / 'usdview-deps-python'
 
     usdz_python_path = base_dir.parent / 'usdzconvert'
 
@@ -59,7 +68,7 @@ def _create_usd_env(base_dir: Path) -> dict:
     env = dict()
     env.update(os.environ)
 
-    if not base.exists():
+    if not _base.exists():
         _logger.error('Could not locate USD binaries base directory.')
         return env
 
@@ -75,7 +84,7 @@ def _create_usd_env(base_dir: Path) -> dict:
             _logger.debug('Could not add non-existing dir to PYTHONPATH: %s', p.as_posix())
 
     # Update PATH
-    for p in (python_deps, libp, usdview_deps, embree_deps):
+    for p in (python_deps, libp, ubin, uplg, usdview_deps, embree_deps):
         if p.exists():
             _update_path_string(env, 'PATH', p)
         else:
