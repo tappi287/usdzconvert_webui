@@ -11,9 +11,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='input.css') }}">
-    <script type=text/javascript>
-        $SCRIPT_ROOT = {{ url_for('static', filename='js')|tojson|safe }};
-    </script>
     {% endblock %}
 </head>
 <body>

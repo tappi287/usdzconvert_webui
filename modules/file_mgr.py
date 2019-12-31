@@ -199,9 +199,13 @@ class FileManager:
 
             # Set output scene file based on input scene file
             if file_field.id == 'scene_file':
-                self.files['out_file'] = {'file_path': file_path.with_suffix(OUT_SUFFIX)}
-                # TODO: For testing use inputFile as outputFile
-                # self.files['out_file'] = {'file_path': file_path}
+                if file_path.suffix == OUT_SUFFIX:
+                    # |in>> one.usdz |out>> one_out.usdz
+                    self.files['out_file'] = {'file_path': file_path.with_name(
+                        f'{file_path.stem}_out{file_path.suffix}')}
+                else:
+                    # |in>> one.abc |out>> one.usdz
+                    self.files['out_file'] = {'file_path': file_path.with_suffix(OUT_SUFFIX)}
 
             files_message += f'[{file_field.id}] {file_path.name}'
 

@@ -18,9 +18,10 @@ class JobFormFields:
             if channels_available:
                 self.desc = f'{desc} [Optional] Select texture color channel (r, g, b or a)'
 
+    scene_file_field = FileField('scene_file', 'Scene file',
+                                 'Input file: OBJ/glTF(.gltf/glb)/FBX/Alembic(.abc)/USD(.usd/usda/usdc/usdz) files.',
+                                 True)
     file_fields = [
-        FileField('scene_file', 'Scene file',
-                  'Input file: OBJ/glTF(.gltf/glb)/FBX/Alembic(.abc)/USD(.usd/usda/usdc/usdz) files.', True),
         FileField('diffuseColor', 'Diffuse Map', 'Use <file> as texture for diffuseColor.'),
         FileField('normal', 'Normal Map', 'Use <file> as texture for normal.'),
         FileField('emissiveColor', 'Emissive Map', 'Use <file> as texture for emissiveColor.'),

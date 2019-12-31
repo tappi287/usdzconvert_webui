@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from modules.globals import APP_NAME
 from modules.log import setup_logging
 
-# TODO: build USD with Alembic support
+# TODO: build USD with Alembic support [Done - Windows]
 # TODO: add options to job page
 # TODO: add maps-per-material fancy UX
 

@@ -58,13 +58,13 @@
                 <details>
                     <summary>Job Details</summary>
                     <table>
-                        <tr class="title"><th>Process Output</th></tr>
+                        <tr class="title"><th>Conversion Output</th></tr>
                         <tr class="job-report">
                             <td>
                                 {% if job.process_messages %}
-                                <pre>{{ job.process_messages|e|default('No process messages available') }}</pre>
+                                    <pre>{{ job.process_messages|e|default('No process messages available') }}</pre>
                                 {% else %}
-                                <pre>No process messages available</pre>
+                                    <pre>No process messages available</pre>
                                 {% endif %}
                             </td>
                         </tr>
@@ -93,12 +93,16 @@
                         </tr>
                         {% endfor %}
                     </table>
-                    <br /><br />
+                    <br />
                     <table>
                         <tr><th>Additional Arguments</th></tr>
                         <tr>
                             <td>
-                                <pre>{{ job.additional_args|default('- no additional parameters were provided -', not '') }}</pre>
+                                {% if not job.option_args %}
+                                    <pre> - no additional parameters were provided - </pre>
+                                {% else %}
+                                    <pre>{{ job.option_args|join(' ') }}</pre>
+                                {% endif %}
                             </td>
                         </tr>
                     </table>

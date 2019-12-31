@@ -14,65 +14,54 @@ html{
     linear-gradient(101deg, hsla(318.87, 39.99%, 20%, 1) 77%, hsla(318.87, 39.99%, 20%, 0) 35%);
   background-attachment: fixed;
   height:100%;
-  color: #F0F0F0;
-}
-body
-{
+  color: #F0F0F0;}
+
+body {
     font-family: Lato, "Helvetica Neue", sans-serif, -apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
-    Ubuntu,Cantarell;
-}
+    Ubuntu,Cantarell;}
 
 pre, code {
     font-family: 'Inconsolata', monospace;
     white-space: pre-wrap;
     overflow-wrap: break-word;
-    margin: 0;
-}
+    margin: 0;}
 
 h1, h2, h3, h4, h5, h6, h7, .montform label, details > summary {
-    font-family: 'Montserrat', sans-serif;
-}
+    font-family: 'Montserrat', sans-serif;}
 
 .error {
-    color: rgb(238, 42, 42);
-}
+    color: rgb(238, 42, 42);}
 
 .title-img {
     float: left;
     margin-top: 8px;
-    margin-right: 8px;
-}
+    margin-right: 8px;}
 
 .page-description {
     font-family: "Segoe UI Light", "Helvetica Neue", sans-serif, -apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
     Ubuntu,Cantarell;
-    font-size: 14px;
-}
+    font-size: 14px;}
 
 div.server-message {
     color: #eeeeee;
     background-color: rgb(87, 76, 114);
     border-radius: 10px;
     padding: 5px 0;
-    margin: 15px 0;
-}
+    margin: 15px 0;}
+
 .server-message span {
-    padding: 0 15px;
-}
+    padding: 0 15px;}
 
 .page-title {
-    margin-bottom: 25px;
-}
+    margin-bottom: 25px;}
 
 #feedback-page{
-	text-align:center;
-}
+	text-align:center;}
 
 #form-main{
 	width:100%;
 	float:left;
-	padding-top:0px;
-}
+	padding-top:0px;}
 
 #form-div {
     background-color:rgba(0, 0, 0, 0.164);
@@ -86,64 +75,52 @@ div.server-message {
     max-width: 810px;
     left: 0;
     right: 0;
-    margin: 30px auto;
-}
+    margin: 30px auto;}
 
 #reload {
     float: right;
     color: #3c3c3c;
     background: #cdcdcd;
-    transition: color 0.3s ease, background 0.3s ease;
-}
+    transition: color 0.3s ease, background 0.3s ease;}
 
 #reload:hover {
     float: right;
     background-color: #3498db;
-    color: white;
-}
+    color: white;}
 
 .job-report {
     font-family: 'Inconsolata', monospace;
     word-break:break-all;
     word-wrap: break-word;
-    padding: 4px;
-}
+    padding: 4px;}
 
 .job {
-    margin-bottom: 35px;
-}
+    margin-bottom: 35px;}
 
 table {
 	border-collapse: collapse;
     width: 100%;
-    margin-bottom: 10px;
-}
+    margin-bottom: 10px;}
   
 td, th {
 	border: none;
 	text-align: left;
     padding: 2px 4px;
-    word-break: break-word;
-}
+    word-break: break-word;}
 
 tr.title th {
-	background-color: rgb(171, 191, 210);
-}
+	background-color: rgb(171, 191, 210);}
 
 progress {
-    max-width: 40%;
-}
+    max-width: 40%;}
 
 details > summary {
     cursor: pointer;
-    outline: none;
-}
+    outline: none;}
 
 details#image-maps > summary, details#options > summary {
     color: rgb(238, 238, 238);
-    padding: 5px 0;
-}
-
+    padding: 5px 0;}
 
 .button-blue, .button-red {
 	font-family: 'Montserrat', Arial, Helvetica, sans-serif;
@@ -159,31 +136,26 @@ details#image-maps > summary, details#options > summary {
     transition: all 0.3s;
     outline: none;
     margin-top:-4px;
-    font-weight:700;
-}
+    font-weight:700;}
 
 .button-red {
-    background-color: tomato;
-}
+    background-color: tomato;}
+
 .button-red:hover {
 	background-color: rgba(0,0,0,0);
-    color: red;
-}
+    color: red;}
 
 .button-blue:hover{
 	background-color: rgba(0,0,0,0);
-	color: #0493bd;
-}
+	color: #0493bd;}
 
 .downloads a {
   text-decoration: none;
   color: rgb(12, 70, 136);
-  transition: color 0.3s ease;
-}
+  transition: color 0.3s ease;}
 
 .downloads a:hover {
-  color: rgb(65, 203, 207);
-}
+  color: rgb(65, 203, 207);}
 
 .downloads .button-blue, .downloads .button-red {
     width: auto;
@@ -191,15 +163,13 @@ details#image-maps > summary, details#options > summary {
     font-size: 0.8em;
     border: none;
     padding: 5px;
-    margin: 0 0 0 5px;
-}
+    margin: 0 0 0 5px;}
 
 .downloads th, .downloads td {
-    text-align: right;
-}
+    text-align: right;}
+
 .downloads th:nth-child(1), .downloads td:nth-child(1) {
-    text-align: left;
-}
+    text-align: left;}
   
 /* Thumbnail */
 .thumbnail{
@@ -208,19 +178,15 @@ details#image-maps > summary, details#options > summary {
     padding: 2px;
     border: 2px solid lightgray;
     border-radius: 3px;
-    float: left;
-}
+    float: left;}
 
 .size{
-    font-size:12px;
-}
+    font-size:12px;}
 
 /*Styles for small screens*/
-
 @media  only screen and (max-width: 580px) {
 	#form-div{
 		width: 100%;
         padding: 25px 5px;
 	}
 }
-

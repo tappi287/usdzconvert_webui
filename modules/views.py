@@ -22,7 +22,9 @@ def _clean_uploads():
 @App.route(Urls.root)
 def index():
     App.logger.info('Endpoint: %s', request.endpoint)
-    return render_template(Urls.templates[Urls.root], content=Site())
+    return render_template(Urls.templates[Urls.root], content=Site(),
+                           upload_allowed_ext=list(App.config.get('UPLOAD_ALLOWED_MAPS'))
+                           )
 
 
 @App.route(Urls.root, methods=['POST'])

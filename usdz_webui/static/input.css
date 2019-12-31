@@ -64,10 +64,6 @@
 
 /* Icons ---------------------------------- */
 .montform .file-field{
-	background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-upload-cloud.svg);
-	background-size: 30px 30px;
-	background-position: 3px -3px;
-	background-repeat: no-repeat;
 	float: right;
 }
 
@@ -88,15 +84,7 @@
     font-size: small;
 }
 
-.montform  #name:focus{
-	background-image: url(https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/svgs/fi-address-book.svg);
-	background-size: 30px 30px;
-	background-position: 8px 5px;
-    background-position: 11px 8px;
-	background-repeat: no-repeat;
-}
-
-.montform #commands{
+.montform #commands {
 	background-position: 11px 8px;
 	background-repeat: no-repeat;
     padding: 0;
@@ -140,4 +128,27 @@ border: 3px solid rgba(0,0,0,0);
 .submit:hover .ease{
   width:100%;
   background-color:white;
+}
+
+#dropzone {
+  background-color: #fbfbfb; border: 1px dashed #3c3c3c; border-radius: 5px;
+  padding: 10px; text-align: center;
+  transition: all 0.2s ease;
+}
+
+#dropzone.entered {
+  background-color: #2196F3;
+  color: #fbfbfb;
+}
+
+#dropzone p, #dropzone.texture_file {
+  /* Prevent drag n drop events on child elements */
+  pointer-events: none;
+}
+
+div.texture-map-entry {
+  /*width: 250px;
+  height: 100px;*/
+  background: lightgrey;
+  border-radius: 10px;
 }

@@ -2,9 +2,8 @@
 {% block title %}Index{% endblock %}
 {% block head %}
     {{ super() }}
-    <!--
-    <script src="{{ url_for('static', filename='js/main.js') }}" type="text/javascript"></script>
-    -->
+    <script type="text/javascript">var upload_allowed_ext = {{ upload_allowed_ext|tojson }}</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/texture_maps.js') }}"></script>
 {% endblock %}
 
 {% block page_title %}
@@ -17,50 +16,22 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Drag and Drop UI -->
-    <div class="container" style="display: none;">
-        <span id="upload-msg"></span>
-        <input name="scene_file" type="file" id="ajax-file" />
-        
-        <div class="upload-area"  id="uploadfile">
-            <h1>Drag and Drop file here<br/>Or<br/>Click to select file</h1>
+    <form method="post" action="/" enctype="multipart/form-data" class="montform" id="reused_form">
+        <div class="file">
+            <label>
+                {{ content.job_form.scene_file_field.label }}
+                <input name="{{ content.job_form.scene_file_field.id }}" type="file" required class="feedback-input file-field">
+            </label>
+            <span class="description">{{ content.job_form.scene_file_field.desc|e }}</span>
         </div>
-    </div>
-    <!-- /Drag and Drop UI -->
+        <br />
 
-    <form method="post" action="/" enctype="multipart/form-data" class="montform" id="reused_form" >
-        {% for required_group in content.job_form.file_fields|groupby('required')|reverse %}
-            {% if not required_group.grouper %}
-            <details id="image-maps">
-            <summary>Texture Maps</summary>
-            {% endif %}
-            {% for file_field in required_group.list %}
-                <p class="file">
-                    <label>
-                        {{ file_field.label }}
-                        {% if file_field.required %}
-                            <input name="{{ file_field.id }}" type="file" required class="feedback-input file-field" />
-                        {% else %}
-                            <input name="{{ file_field.id }}" type="file" class="feedback-input file-field" />
-                        {% endif %}
-                    </label>
-                    {% if file_field.channels_available %}
-                    <input name="{{ file_field.channel_id }}" type="text" class="color-channel" list="color-channels" />
-                    <datalist id="color-channels" >
-                        <option> R
-                        <option> G
-                        <option> B
-                        <option> A
-                    </datalist>
-                    {% endif %}
-                    <br />
-                    <span class="description">{{ file_field.desc|e }}</span>
-                </p>
-            {% endfor %}
-            {% if not required_group.grouper %}
-            </details>
-            {% endif %}
-        {% endfor %}
+        <div id="dropzone">
+            <p id="drop_text" class="description">Drag n drop texture maps here</p>
+            <div id="texture-map-container"></div>
+        </div>
+        <br />
+
         <details id="options">
             <summary>Options</summary>
             {% for option_field in content.job_form.option_fields %}
@@ -68,31 +39,63 @@
                     <label>
                         {{ option_field.label }}
                         {% if option_field.input_type == 'textarea' %}
-                            <input name="{{ option_field.id }}" type="text" class="color-channel" />
+                            <input name="{{ option_field.id }}" type="text" class="color-channel">
                         {% elif option_field.input_type == 'checkbox' %}
                             <div class="checkbox-container">
-                                <input name="{{ option_field.id }}" type="checkbox"/>
+                                <input name="{{ option_field.id }}" type="checkbox">
                                 <span class="checkmark"></span>
                             </div>
                         {% elif option_field.input_type == 'float' %}
-                            <input name="{{ option_field.id }}" type="number" step="any"  min="0" class="color-channel" />
+                            <input name="{{ option_field.id }}" type="number" step="any"  min="0" class="color-channel">
                         {% elif option_field.input_type == 'url' %}
-                            <input name="{{ option_field.id }}" type="url" class="color-channel" />
+                            <input name="{{ option_field.id }}" type="url" class="color-channel">
                         {% endif %}
                         <br />
                     </label>
                     <span class="description">{{ option_field.desc|e }}</span>
                 </div>
             {% endfor %}
+            <p class="file">
+                 <textarea name="{{ content.job_form.additional_args }}" class="feedback-input" id="commands" 
+                 placeholder="{{ content.job_form.additional_args_text }}"></textarea>
+            </p>
         </details>
 
-         <p class="file">
-             <textarea name="{{ content.job_form.additional_args }}" class="feedback-input" id="commands"
-                       placeholder="{{ content.job_form.additional_args_text }}"></textarea>
-         </p>
+        <br />
          <div class="submit">
              <button type="submit" class="button-blue">SUBMIT</button>
              <div class="ease"></div>
          </div>
     </form>
+
+    <div style="display: none;">
+        <div id="texture-form-template" class="texture-map-entry" style="display: none">
+            <span class="texture_file_label"></span>
+            <input style="display: none;" name="template_file" type="text" class="texture_file_name">
+            <label>
+                Map Type
+                <select name="texture_type" class="texture_type">
+                    {% for texture_map in content.job_form.file_fields %}
+                        <option value="{{ texture_map.label }}" description="{{ texture_map.desc }}">{{ texture_map.label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>
+                Channel
+                <select name="texture_channel" class="texture_channel">
+                    <option value="">RGBA</option>
+                    <option value="R">R</option>
+                    <option value="G">G</option>
+                    <option value="B">B</option>
+                    <option value="A">A</option>
+                </select>
+                <!-- <input name="texture_channel" type="text" list="color-channels" class="color-channel drop-texture-channel"> -->
+            </label>
+            <label>
+                Material
+                <input name="material" type="text" class="texture_material">
+            </label>
+            <span class="description">Texture Type Description</span>
+        </div>
+    </div>
 {% endblock content %}
