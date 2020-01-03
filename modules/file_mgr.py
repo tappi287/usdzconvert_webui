@@ -1,17 +1,16 @@
 import shutil
 import time
 from datetime import datetime
-
-from modules import filesize
 from pathlib import Path
 from shutil import rmtree
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple, Union
 
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 
 from app import App
-from modules.globals import APP_NAME, get_current_modules_dir, OUT_SUFFIX
+from modules import filesize
+from modules.globals import APP_NAME, OUT_SUFFIX, get_current_modules_dir
 from modules.log import setup_logger
 from modules.site import JobFormFields, Urls
 
@@ -31,12 +30,12 @@ class FileManager:
         if active_job_dirs:
             _logger.info('Not touching active jobs dirs during clean-up: %s', active_job_dirs)
         
-        sucess = True
+        success = True
         for p in upload_dir.glob('*'):
             if p not in active_job_dirs:
-                sucess = False if not cls.clear_folder(p) else sucess
+                success = False if not cls.clear_folder(p) else success
 
-        return sucess
+        return success
 
     @staticmethod
     def clear_folder(folder: Path, re_create: bool = True) -> bool:
@@ -128,30 +127,6 @@ class FileManager:
     def _allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in App.config.get('UPLOAD_ALLOWED_EXT')
 
-    @classmethod
-    def _get_valid_files(cls, files: ImmutableMultiDict) -> List[JobFormFields.FileField]:
-        valid_file_fields = list()
-
-        for file_field in JobFormFields.file_fields:
-            file_name = ''
-
-            if file_field.id in files:
-                file_name = files[file_field.id].filename
-
-            if file_name:
-                if cls._allowed_file(file_name):
-                    valid_file_fields.append(file_field)
-                else:
-                    _logger.error('File extension not allowed! %s', file_name)
-                    file_name = ''
-
-            if file_field.required:
-                if not file_name:
-                    _logger.error('Required file: %s is missing or of wrong type!', file_field.id)
-                    return list()
-
-        return valid_file_fields
-
     @staticmethod
     def create_job_dir() -> Union[Path, None]:
         name = f'up_{str(time.time()).replace(".", "")[-15:]}'
@@ -167,6 +142,93 @@ class FileManager:
         _logger.debug('Created Job directory %s', job_dir)
         return job_dir
 
+    def _save_file(self, file) -> Union[None, Path]:
+        if not file or not self._allowed_file(file.filename):
+            return
+
+        file_path = self.job_dir / secure_filename(file.filename)
+        file.save(file_path.as_posix())
+        return file_path
+
+    def _save_scene_file(self, scene_file) -> bool:
+        if not scene_file:
+            _logger.error('Scene file not found in Form data.')
+            return False
+
+        file_path = self._save_file(scene_file)
+
+        if file_path is None:
+            _logger.error('File extension not allowed or file could not be stored: %s', scene_file.filename)
+            return False
+
+        # Update files dict
+        self.files[JobFormFields.scene_file_field.id] = {'file_path': file_path}
+
+        # Set out file path
+        if file_path.suffix == OUT_SUFFIX:
+            # |in>> one.usdz |out>> one_out.usdz
+            self.files['out_file'] = {'file_path': file_path.with_name(f'{file_path.stem}_out{file_path.suffix}')}
+        else:
+            # |in>> one.abc |out>> one.usdz
+            self.files['out_file'] = {'file_path': file_path.with_suffix(OUT_SUFFIX)}
+
+        return True
+
+    @staticmethod
+    def _create_flat_texture_files_dict(files: ImmutableMultiDict) -> dict:
+        texture_files = dict()
+
+        for k, v in files.items():
+            if not k.startswith(JobFormFields.TextureMap.file_storage):
+                continue
+
+            file_list = files.getlist(key=k)
+
+            for file in file_list:
+                texture_files[file.filename] = file
+
+        return texture_files
+
+    def _get_texture_maps(self, files: ImmutableMultiDict, form: ImmutableMultiDict) -> str:
+        texture_ids = JobFormFields.TextureMap
+        texture_files = self._create_flat_texture_files_dict(files)
+        option_ids = [o.id for o in JobFormFields.option_fields]
+        msg = ''
+
+        for key, value in form.items():
+            if key in option_ids:
+                continue
+
+            # Get texture num 'texture_file_1' map_key = ('texture_file', 1)
+            map_key = key.rsplit('_', 1)
+            if len(map_key) < 2:
+                continue
+
+            map_id, map_num = map_key
+            if map_id != texture_ids.file:
+                continue
+
+            file = texture_files.get(value)
+            if not file:
+                _logger.error('No texture file found for %s!', key)
+                continue
+
+            self.files[f'texture_map_{map_num}'] = {
+                'file_path': self._save_file(file),
+                texture_ids.channel: form.get(f'{texture_ids.channel}_{map_num}', ''),
+                texture_ids.material: form.get(f'{texture_ids.material}_{map_num}', ''),
+                texture_ids.type: form.get(f'{texture_ids.type}_{map_num}', ''),
+                }
+
+            line = "\n{}{} {}".format(
+                form.get(f'{texture_ids.material}_{map_num} ', ''),
+                form.get(f'{texture_ids.type}_{map_num}', ''),
+                file.filename)
+            _logger.debug('Saved texture_map: %s', line)
+            msg += line
+
+        return msg
+
     def handle_post_request(self, files: ImmutableMultiDict, form: ImmutableMultiDict) -> Tuple[bool, str]:
         """ Handle POST request and store files in new job directory if valid files found.
 
@@ -174,40 +236,11 @@ class FileManager:
         :param ImmutableMultiDict form: POST request form dict
         :return: bool, message
         """
-        valid_file_fields = self._get_valid_files(files)
-
-        if not valid_file_fields:
-            return False, 'No files received or file types not supported.'
-
         self.job_dir = self.create_job_dir()
+        if not self._save_scene_file(files.get(JobFormFields.scene_file_field.id)):
+            return False, 'Scene file not found or not supported.'
 
-        if self.job_dir is None:
-            return False, 'Error storing files on the server. There is nothing you can do about that.'
+        msg = self._get_texture_maps(files, form)
+        msg += f'\n{self.files[JobFormFields.scene_file_field.id]}'
 
-        files_message = ''
-
-        # Store files in job dir
-        for file_field in valid_file_fields:
-            file = files[file_field.id]
-            file_path = self.job_dir / secure_filename(file.filename)
-            file.save(file_path.as_posix())
-
-            use_channel = form.get(file_field.channel_id, '')
-
-            # Update files dict
-            self.files[file_field.id] = {'file_path': file_path, 'use_channel': use_channel}
-
-            # Set output scene file based on input scene file
-            if file_field.id == 'scene_file':
-                if file_path.suffix == OUT_SUFFIX:
-                    # |in>> one.usdz |out>> one_out.usdz
-                    self.files['out_file'] = {'file_path': file_path.with_name(
-                        f'{file_path.stem}_out{file_path.suffix}')}
-                else:
-                    # |in>> one.abc |out>> one.usdz
-                    self.files['out_file'] = {'file_path': file_path.with_suffix(OUT_SUFFIX)}
-
-            files_message += f'[{file_field.id}] {file_path.name}'
-
-        _logger.info('FileManager stored files: %s', ', '. join([str(f) for f in self.files.values()]))
-        return True, f'Files successfully uploaded. {files_message}'
+        return True, f'Files successfully uploaded.\n{msg}'

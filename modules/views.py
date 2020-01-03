@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from flask import flash, redirect, render_template, request, jsonify, url_for, send_from_directory
+from flask import flash, redirect, render_template, request, url_for
 
 from app import App, db
 from modules.file_mgr import FileManager
-from modules.globals import get_current_modules_dir, LOG_FILE_PATH
+from modules.globals import LOG_FILE_PATH, get_current_modules_dir
 from modules.job import ConversionJob, JobManager
-from modules.site import Site, JobFormFields, Urls
+from modules.site import Site, Urls
 
 
 @App.before_first_request
@@ -119,6 +119,7 @@ def usd_manual():
         usd_man = 'Could not find manual txt file.'
 
     return render_template(Urls.templates[Urls.usd_man], content=Site(), usd_manual=usd_man)
+
 
 @App.route(Urls.log)
 def log():

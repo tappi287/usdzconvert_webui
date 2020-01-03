@@ -1,0 +1,24 @@
+{
+  "name": "usdzconvert_webui",
+  "version": "0.9.0",
+  "description": "Web interface to convert 3d content to usdz format",
+  "main": "app.py",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "standard": "14.3.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tappi287/usdzconvert_webui.git"
+  },
+  "author": "Stefan Tapper",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tappi287/usdzconvert_webui/issues"
+  },
+  "homepage": "https://github.com/tappi287/usdzconvert_webui#readme"
+}

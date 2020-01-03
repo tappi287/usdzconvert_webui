@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Iterator, Union, Tuple
+from typing import Iterator, Tuple, Union
 
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
@@ -8,10 +8,9 @@ from werkzeug.utils import secure_filename
 from app import App, db
 from modules.create_process import RunProcess
 from modules.file_mgr import FileManager
-from modules.globals import get_current_modules_dir
 from modules.log import setup_logger
+from modules.site import JobFormFields, Urls
 from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env
-from modules.site import Urls, JobFormFields
 
 _logger = setup_logger(__name__)
 
@@ -190,22 +189,31 @@ class JobManager:
     @staticmethod
     def create_job_arguments(job: ConversionJob) -> list:
         args = list()
-        valid_texture_map_ids = [f.id for f in JobFormFields.file_fields]
+        current_material = ''
 
-        for file_id, file_entry in job.files.items():
+        # Sort file dict by material entry
+        for file_id, file_entry in sorted(job.files.items(), key=lambda f: f[1].get('material', '')):
             file_path = Path(file_entry.get("file_path"))
 
             if file_id in ('scene_file', 'out_file'):
                 args.append(file_path.as_posix())  # inputFile/outputFile arguments
                 continue
 
-            if file_id not in valid_texture_map_ids:
+            # Only TextureMaps from here
+            # -m materialName -diffuseColor diffuseFile.png
+            if not file_id.startswith(JobFormFields.TextureMap.file_storage):
                 continue
 
-            # Add texture maps file arguments
-            args.append(f'-{file_id}')
+            material = file_entry.get(JobFormFields.TextureMap.material)
+            if material and material != current_material:
+                current_material = material
+                args.append(f'-m')
+                args.append(material)
 
-            channel = file_entry.get('use_channel')
+            # Add texture maps file arguments
+            args.append(f'-{file_entry.get(JobFormFields.TextureMap.type)}')
+
+            channel = file_entry.get(JobFormFields.TextureMap.channel)
             if channel:
                 _logger.info('Adding channel argument: %s', channel)
                 args.append(channel.lower())

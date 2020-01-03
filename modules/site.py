@@ -1,38 +1,50 @@
 
 
 class JobFormFields:
+    class TextureMap:
+        """ FrontEnd will enumerate eg. texture_file_1 """
+        file = 'texture_file'  # FrontEnd class name, BackEnd Form key
+        type = 'texture_type'
+        channel = 'texture_channel'
+        material = 'texture_material'
+        material_desc = "Leave blank to assign map to the Default material. [Optional] enter the name of the input " \
+                        "file material you want this texture map assigned to"
+        file_storage = 'texture_map'
+
     class OptionField:
         def __init__(self, _id: str, label: str, desc: str, input_type: str):
             self.id, self.label, self.desc = _id, label, desc
             self.input_type = input_type
 
     class FileField:
-        def __init__(self, _id: str, label: str, desc: str, required: bool=False, channels_available: bool=False):
+        def __init__(self, _id: str, label: str, desc: str, required: bool=False):
             self.id = _id
             self.channel_id = f'{_id}_channel'
             self.label = label
             self.desc = desc
             self.required = required
-            self.channels_available = channels_available
-
-            if channels_available:
-                self.desc = f'{desc} [Optional] Select texture color channel (r, g, b or a)'
 
     scene_file_field = FileField('scene_file', 'Scene file',
                                  'Input file: OBJ/glTF(.gltf/glb)/FBX/Alembic(.abc)/USD(.usd/usda/usdc/usdz) files.',
                                  True)
-    file_fields = [
-        FileField('diffuseColor', 'Diffuse Map', 'Use <file> as texture for diffuseColor.'),
-        FileField('normal', 'Normal Map', 'Use <file> as texture for normal.'),
-        FileField('emissiveColor', 'Emissive Map', 'Use <file> as texture for emissiveColor.'),
-        FileField('metallic', 'Metallic Map', 'Use <file> as texture for metallic.', channels_available=True),
-        FileField('roughness', 'Roughness Map', 'Use <file> as texture for roughness.', channels_available=True),
-        FileField('occlusion', 'Occlusion Map', 'Use <file> as texture for occlusion.', channels_available=True),
-        FileField('opacity', 'Opacity Map', 'Use <file> as texture for opacity.', channels_available=True),
-        FileField('clearcoat', 'Clearcoat Map', 'Use <file> as texture for clearcoat.', channels_available=True),
-        FileField('clearcoatRoughness', 'Clearcoat Roughness Map', 'Use <file> as texture for clearcoat roughness.',
-                  channels_available=True)
-        ]
+
+    texture_map_types = ['diffuseColor', 'normal', 'emissiveColor', 'metallic', 'roughness', 'occlusion',
+                         'opacity', 'clearcoat', 'clearcoatRoughness']
+    texture_map_channel = [False, False, False, True, True, True, True, True, True]
+    texture_map_labels = [
+        'Diffuse Map', 'Normal Map', 'Emissive Map', 'Metallic Map', 'Roughness Map', 'Occlusion Map', 'Opacity Map',
+        'Clearcoat Map', 'Clearcoat Roughness Map']
+
+    texture_map_desc = ['Use <file> as texture for diffuseColor.', 'Use <file> as texture for normal.',
+                        'Use <file> as texture for emissiveColor.',
+                        'Use <file> as texture for metallic. [Optional] Select texture color channel (r, g, b or a)',
+                        'Use <file> as texture for roughness. [Optional] Select texture color channel (r, g, b or a)',
+                        'Use <file> as texture for occlusion. [Optional] Select texture color channel (r, g, b or a)',
+                        'Use <file> as texture for opacity. [Optional] Select texture color channel (r, g, b or a)',
+                        'Use <file> as texture for clearcoat. [Optional] Select texture color channel (r, g, b or a)',
+                        'Use <file> as texture for clearcoat roughness. [Optional] Select texture color channel '
+                        '(r, g, b or a)']
+    texture_map_list = [(t, l, d) for t, l, d in zip(texture_map_types, texture_map_labels, texture_map_desc)]
 
     option_fields = [
         OptionField('url', 'Url', 'Add URL metadata', 'url'),

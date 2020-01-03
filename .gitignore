@@ -1,4 +1,5 @@
 /instance/
+/node_modules/
 /usdz_webui/upload/
 /.idea/
 /.vscode/

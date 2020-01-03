@@ -2,8 +2,15 @@
 {% block title %}Index{% endblock %}
 {% block head %}
     {{ super() }}
-    <script type="text/javascript">var upload_allowed_ext = {{ upload_allowed_ext|tojson }}</script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/texture_maps.js') }}"></script>
+    <script type="text/javascript">
+        var t = textureMapDragDrop (
+            {{ upload_allowed_ext|tojson }},
+            {{ content.job_form.texture_map_types|tojson }},
+            {{ content.job_form.texture_map_desc|tojson }},
+            {{ content.job_form.texture_map_channel|tojson }}
+            )
+    </script>
 {% endblock %}
 
 {% block page_title %}
@@ -70,32 +77,44 @@
 
     <div style="display: none;">
         <div id="texture-form-template" class="texture-map-entry" style="display: none">
-            <span class="texture_file_label"></span>
-            <input style="display: none;" name="template_file" type="text" class="texture_file_name">
-            <label>
-                Map Type
-                <select name="texture_type" class="texture_type">
-                    {% for texture_map in content.job_form.file_fields %}
-                        <option value="{{ texture_map.label }}" description="{{ texture_map.desc }}">{{ texture_map.label }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <label>
-                Channel
-                <select name="texture_channel" class="texture_channel">
-                    <option value="">RGBA</option>
-                    <option value="R">R</option>
-                    <option value="G">G</option>
-                    <option value="B">B</option>
-                    <option value="A">A</option>
-                </select>
-                <!-- <input name="texture_channel" type="text" list="color-channels" class="color-channel drop-texture-channel"> -->
-            </label>
-            <label>
-                Material
-                <input name="material" type="text" class="texture_material">
-            </label>
-            <span class="description">Texture Type Description</span>
+            <table>
+                <tr>
+                    <th>
+                        <span class="texture_file_label"></span>
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        <input style="display: none;" name="{{ content.job_form.TextureMap.file }}" type="text"
+                        class="{{ content.job_form.TextureMap.file }}">
+                        <label>
+                            Map Type
+                            <select name="{{ content.job_form.TextureMap.type }}" class="{{ content.job_form.TextureMap.type }}">
+                                {% for type, label, desc in content.job_form.texture_map_list %}
+                                    <option value="{{ type }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="{{ content.job_form.TextureMap.channel }}" class="{{ content.job_form.TextureMap.channel }}">
+                                <option value="">RGBA</option>
+                                <option value="R">R</option>
+                                <option value="G">G</option>
+                                <option value="B">B</option>
+                                <option value="A">A</option>
+                            </select>
+                        </label>
+                        <label>
+                            Material
+                            <input name="{{ content.job_form.TextureMap.material }}" type="text" 
+                            title="{{ content.job_form.TextureMap.material_desc|e }}" class="{{ content.job_form.TextureMap.material }}">
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="description texture_description">Texture Type Description</span>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 {% endblock content %}

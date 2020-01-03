@@ -8,8 +8,6 @@ from modules.globals import APP_NAME
 from modules.log import setup_logging
 
 # TODO: build USD with Alembic support [Done - Windows]
-# TODO: add options to job page
-# TODO: add maps-per-material fancy UX
 
 App = Flask(APP_NAME, instance_relative_config=True)
 App.config.from_object('config')  # Loads the default config.py from root dir
