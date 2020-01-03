@@ -15,50 +15,55 @@
 </head>
 <body>
     <div class="container">
-        <div id="form-main">
-            <div id="form-div">
-                <!-- Title Area -->
-                <nav role="navigation">
-                    <div id="menuToggle">
-                        <input type="checkbox" />
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <ul id="menu">
-                        {% for title, url in content.urls.navigation.items() %}
-                            <a href="{{ url }}"><li>{{ title }}</li></a>
-                        {% endfor %}
-                        </ul>
-                    </div>
-                </nav>
-                <a href="/">
-                <img class="title-img" src="{{ url_for('static', filename='USD_Logo.svg', version='1') }}" width="46"
-                     height="46"/>
-                </a>
-                <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
-                <div class="page-description">
-                    {% block description %}{% endblock %}
+        <div id="form-div">
+            <!-- Title Area -->
+            <nav role="navigation">
+                <div id="menuToggle">
+                    <input type="checkbox" />
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <ul id="menu">
+                    {% for title, url in content.urls.navigation.items() %}
+                        <a href="{{ url }}"><li>{{ title }}</li></a>
+                    {% endfor %}
+                    </ul>
                 </div>
-                <!-- /Title Area -->
+            </nav>
+            <a href="/">
+            <img class="title-img" src="{{ url_for('static', filename='USD_Logo.svg', version='1') }}" width="46"
+                    height="46"/>
+            </a>
+            <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
+            <div class="page-description">
+                {% block description %}{% endblock %}
+            </div>
+            <!-- /Title Area -->
 
-                <!-- Message Area -->
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                    <div class="server-message">
-                        <span> Server Message</span>
-                        <ul class=flashes>
-                           {% for message in messages %}
-                           <li>{{ message }}</li>
-                           {% endfor %}
-                        </ul>
-                    </div>
-                    {% endif %}
-                {% endwith %}
-                <!-- /Message Area -->
+            <!-- Message Area -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                <div class="server-message">
+                    <span> Server Message</span>
+                    <ul class=flashes>
+                        {% for message in messages %}
+                        <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            {% endwith %}
+            <!-- /Message Area -->
 
-                <!-- Content Area -->
-                {% block content %}{% endblock %}
-                <!-- /Content Area -->
+            <!-- Content Area -->
+            {% block content %}{% endblock %}
+            <!-- /Content Area -->
+            <div id="footer-line">
+                <ul>
+                    <li><a href="https://github.com/tappi287/usdzconvert_webui">Github</a> project page</li>
+                    <li>Made with <a href="https://palletsprojects.com/p/flask/">Flask</a></li>
+                    <li><a href="{{ content.urls.about }}">License Notes</a></li>
+                </ul>
             </div>
         </div>
     </div>

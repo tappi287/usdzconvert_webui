@@ -5,6 +5,7 @@ verify_ssl = true
 
 [dev-packages]
 rope = "*"
+pylint = "*"
 
 [packages]
 flask = "*"

@@ -58,19 +58,14 @@ div.server-message {
 #feedback-page{
 	text-align:center;}
 
-#form-main{
-	width:100%;
-	float:left;
-	padding-top:0px;}
-
 #form-div {
     background-color:rgba(0, 0, 0, 0.164);
     border-radius: 14px;
+    position: absolute;
     padding-left: 35px;
     padding-right: 35px;
     padding-top: 35px;
     padding-bottom: 50px;
-    position: absolute;
     width: 80%;
     max-width: 810px;
     left: 0;
@@ -182,6 +177,48 @@ details#image-maps > summary, details#options > summary {
 
 .size{
     font-size:12px;}
+
+#texture-map-container tr:first-child {
+    border: none;
+}
+
+.texture-map-entry label {
+    font-size: small;
+}
+
+#texture-map-container th {
+    background-color: rgb(171, 191, 210);
+    border-radius: 10px;
+    padding: 4px 4px 6px 5px;
+}
+
+#footer-line {
+    color: rgb(238, 238, 238);
+    font-size: small;
+    text-align: center;
+    position: absolute;
+    left: 0;
+    bottom: -44px;
+    width: 100%;
+    opacity: 0.6;
+}
+#footer-line li {
+    display: inline-block;
+    height: 16px;
+    border-right: 2px solid white;
+    padding: 0 6px 0 3px;
+}
+#footer-line li:last-child {
+    border: none;
+}
+#footer-line a {
+    text-decoration: underline;
+    color: rgb(238, 238, 238);
+    transition: color 0.3s ease;}
+  
+#footer-line a:hover {
+    color: rgb(65, 203, 207);
+}
 
 /*Styles for small screens*/
 @media  only screen and (max-width: 580px) {

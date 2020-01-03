@@ -124,8 +124,12 @@ class FileManager:
         return False
 
     @staticmethod
-    def _allowed_file(filename):
+    def _allowed_file(filename: str) -> bool:
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in App.config.get('UPLOAD_ALLOWED_EXT')
+
+    @staticmethod
+    def _is_multi_file_scene_primary(filename: str) -> bool:
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ('gltf', )
 
     @staticmethod
     def create_job_dir() -> Union[Path, None]:
@@ -150,15 +154,30 @@ class FileManager:
         file.save(file_path.as_posix())
         return file_path
 
-    def _save_scene_file(self, scene_file) -> bool:
-        if not scene_file:
+    def _save_scene_file(self, files: ImmutableMultiDict) -> bool:
+        scene_files = files.getlist(key=JobFormFields.scene_file_field.id)
+
+        if not scene_files:
             _logger.error('Scene file not found in Form data.')
             return False
 
-        file_path = self._save_file(scene_file)
+        file_path = None
 
-        if file_path is None:
-            _logger.error('File extension not allowed or file could not be stored: %s', scene_file.filename)
+        for file in scene_files:
+            scene_path = self._save_file(file)
+
+            if scene_path is None:
+                _logger.error('File extension not allowed or file could not be stored: %s', file.filename)
+                return False
+
+            # eg. gltf + bin will return gltf scene file path as primary file path
+            if self._is_multi_file_scene_primary(file.filename):
+                file_path = scene_path
+            elif len(scene_files) == 1:
+                file_path = scene_path
+
+        if not file_path:
+            _logger.error('Could not locate primary scene file in: %s', scene_files)
             return False
 
         # Update files dict
@@ -237,7 +256,7 @@ class FileManager:
         :return: bool, message
         """
         self.job_dir = self.create_job_dir()
-        if not self._save_scene_file(files.get(JobFormFields.scene_file_field.id)):
+        if not self._save_scene_file(files):
             return False, 'Scene file not found or not supported.'
 
         msg = self._get_texture_maps(files, form)

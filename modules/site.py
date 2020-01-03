@@ -25,7 +25,7 @@ class JobFormFields:
             self.required = required
 
     scene_file_field = FileField('scene_file', 'Scene file',
-                                 'Input file: OBJ/glTF(.gltf/glb)/FBX/Alembic(.abc)/USD(.usd/usda/usdc/usdz) files.',
+                                 'OBJ / glTF(.gltf/glb) / FBX / Alembic(.abc) / USD(.usd/usda/usdc/usdz)',
                                  True)
 
     texture_map_types = ['diffuseColor', 'normal', 'emissiveColor', 'metallic', 'roughness', 'occlusion',
@@ -73,7 +73,7 @@ class Urls:
     about = '/about'
     log = '/log'
 
-    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads, 'about': about}
+    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads}
 
     templates = {root: 'index.html.j2', job_page: 'job.html.j2', usd_man: 'usdman.html.j2', log: 'log.html.j2',
                  downloads: 'downloads.html.j2', about: 'about.html.j2'}

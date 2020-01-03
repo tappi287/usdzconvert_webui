@@ -80,8 +80,10 @@
     margin: 1em 0;
 }
 
-.montform .file span.description{
+.montform .file .description, .montform .description{
     font-size: small;
+    display: block;
+    line-height: initial;
 }
 
 .montform #commands {
@@ -130,13 +132,31 @@ border: 3px solid rgba(0,0,0,0);
   background-color:white;
 }
 
-#dropzone {
+#dropzone, #scene-file-dropzone {
   background-color: #fbfbfb; border: 1px dashed #3c3c3c; border-radius: 5px;
-  padding: 10px; text-align: center;
-  transition: all 0.2s ease;
+  padding: 10px; text-align: center; line-height: initial;
+  transition: all 0.6s ease;
+}
+#scene-file-spacer, #texture-map-spacer {
+  background-size: 48px;
+  background-repeat: no-repeat;
+  background-position-y: 26%;
+  background-position-x: center;
+  opacity: 0.25;
+}
+#scene-file-spacer {
+  height: 70px;
+  background-image: url(./cloud_upload-24px.svg);
+}
+#texture-map-spacer {
+  height: 70px;
+  background-image: url(./insert_photo-24px.svg);
+}
+#scene-file-dropzone input {
+  color: #3c3c3c;
 }
 
-#dropzone.entered {
+#dropzone.entered, #scene-file-dropzone.entered {
   background-color: #2196F3;
   color: #fbfbfb;
 }

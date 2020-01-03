@@ -2,13 +2,15 @@
 {% block title %}Index{% endblock %}
 {% block head %}
     {{ super() }}
-    <script type="text/javascript" src="{{ url_for('static', filename='js/texture_maps.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/dragdropupload.js') }}"></script>
     <script type="text/javascript">
-        var t = textureMapDragDrop (
-            {{ upload_allowed_ext|tojson }},
-            {{ content.job_form.texture_map_types|tojson }},
-            {{ content.job_form.texture_map_desc|tojson }},
-            {{ content.job_form.texture_map_channel|tojson }}
+        var t = dragDropUpload (
+                {{ upload_allowed_maps_ext|tojson }},
+                {{ upload_allowed_scene_ext|tojson }},
+                {{ content.job_form.texture_map_types|tojson }},
+                {{ content.job_form.texture_map_desc|tojson }},
+                {{ content.job_form.texture_map_channel|tojson }},
+                {{ content.job_form.scene_file_field.id|tojson }}
             )
     </script>
 {% endblock %}
@@ -18,22 +20,25 @@
 {% endblock %}
 
 {% block description %}
-    <p>Drag n drop files to the appropiate upload fields. You need to manually assign texture maps. They will not be read from the input file.
-     Submit will enqueue a conversion job and guide you to the job page.</p>
+    <p>Drag n drop files to the appropriate upload fields. See available Options below.</p>
 {% endblock %}
 
 {% block content %}
     <form method="post" action="/" enctype="multipart/form-data" class="montform" id="reused_form">
-        <div class="file">
+        <div class="file" id="scene-file-dropzone">
             <label>
                 {{ content.job_form.scene_file_field.label }}
-                <input name="{{ content.job_form.scene_file_field.id }}" type="file" required class="feedback-input file-field">
+                <input style="display: none;" name="{{ content.job_form.scene_file_field.id }}" type="file" required class="feedback-input file-field">
             </label>
-            <span class="description">{{ content.job_form.scene_file_field.desc|e }}</span>
+            <div id="scene-file-spacer"></div>
+            <p class="description">{{ content.job_form.scene_file_field.desc|e }}</p>
+            <p id="scene_file_drop_text" class="description">Drag n drop scene file(s) here. Drop both scene files at once if your scene file is eg. gltf+bin</p>
         </div>
         <br />
 
         <div id="dropzone">
+            <label>Texture Maps</label>
+            <div id="texture-map-spacer"></div>
             <p id="drop_text" class="description">Drag n drop texture maps here</p>
             <div id="texture-map-container"></div>
         </div>

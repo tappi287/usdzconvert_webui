@@ -96,11 +96,17 @@ class ConversionJob(db.Model):
         self.progress = min(self.progress, self.progress + 15)
 
     def download_filename(self) -> Union[None, str]:
+        if self.state == self.States.failed:
+            return
+
         if self.out_file().exists() and self.completed:
             return f'{os.path.split(Urls.static_downloads)[1]}/' \
                    f'{secure_filename(self.job_dir().name)}/{self.out_file().name}'
 
     def direct_download_url(self) -> Union[None, str]:
+        if self.state == self.States.failed:
+            return
+            
         if self.out_file().exists() and self.completed:
             return f'{Urls.static_downloads}/' \
                    f'{secure_filename(self.job_dir().name)}/{self.out_file().name}'
