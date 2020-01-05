@@ -1,0 +1,27 @@
+<!doctype html>
+
+<html lang="de">
+<head>
+	<meta charset="utf-8">
+
+	<title>Augmented Reality</title>
+	<meta name="description" content="{{ page_description }}">
+	<meta name="author" content="USDZ Conversion Server">
+	<style>
+		#main-div {margin:0 auto;width:600px;border: none;padding:10px;}
+		img {border-radius: 5px; max-width: 350px; display: block; margin: 0 auto;}
+		.desc {font-family: "Segoue UI", Helvetica, sans-serif; text-align: center;}
+	</style>
+</head>
+
+<body>
+<div id="main-div">
+	<a rel="ar" href="{{ usdz_file }}">
+	  <img src="{{ preview_image_url }}">
+	</a>
+	<p class="desc">
+		{{ page_description }}
+	</p>
+</div>
+</body>
+</html>

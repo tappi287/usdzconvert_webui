@@ -38,15 +38,19 @@
                     <td>
                         {{ entry.get('created') }}
                     </td>
-                    <td>
+                    <td class="downloads">
                         {% set download_file = entry_id + "/" + entry.get("name") %}
                         <form method="get" action="{{ content.urls.download_delete }}/{{ entry_id }}" class="montform">
-                            <button type="submit" id="{{ entry_id }}" class="button-red" 
+                            <button type="submit" id="del_{{ entry_id }}" class="button-red" 
                             title="Permanently delete the download file from the server."
                             onclick="return confirm('Are you sure you want to permanently delete {{ download_file }}?')">Delete</button>
                         </form>
                         <form method="get" action="{{ entry.get('url') }}" class="montform">
-                            <button type="submit" id="{{ entry_id }}" class="button-blue">Download</button>
+                            <button type="submit" id="dl_{{ entry_id }}" class="button-blue">Download</button>
+                        </form>
+                        <form method="get" action="{{ content.urls.share }}/{{ entry_id }}" class="montform">
+                            <button type="submit" id="share_{{ entry_id }}" class="button-blue" 
+                            title="Share the file on a public remote server">Share</button>
                         </form>
                     </td>
                 <tr>

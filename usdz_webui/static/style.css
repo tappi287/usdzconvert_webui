@@ -70,7 +70,8 @@ div.server-message {
     max-width: 810px;
     left: 0;
     right: 0;
-    margin: 30px auto;}
+    margin: 30px auto 60px auto;
+}
 
 #reload {
     float: right;
@@ -101,7 +102,8 @@ td, th {
 	border: none;
 	text-align: left;
     padding: 2px 4px;
-    word-break: break-word;}
+    word-break: break-word;
+}
 
 tr.title th {
 	background-color: rgb(171, 191, 210);}
@@ -133,6 +135,20 @@ details#image-maps > summary, details#options > summary {
     margin-top:-4px;
     font-weight:700;}
 
+#share-preview-image {
+    display: block;
+    border: 2px solid #cdcdcd;
+    border-radius: 5px;
+    margin: 0 auto;
+    max-width: 30%;
+}
+#share-img-drop-text {
+    text-align: center;
+}
+#remote_url {
+    float: right;
+}
+
 .button-red {
     background-color: tomato;}
 
@@ -144,24 +160,32 @@ details#image-maps > summary, details#options > summary {
 	background-color: rgba(0,0,0,0);
 	color: #0493bd;}
 
-.downloads a {
+.downloads a, .server-message a {
   text-decoration: none;
   color: rgb(12, 70, 136);
-  transition: color 0.3s ease;}
-
-.downloads a:hover {
-  color: rgb(65, 203, 207);}
-
+  transition: color 0.3s ease;
+}
+.server-message a {
+      color: #2196F3;
+}
+.downloads a:hover, .server-message a:hover {
+  color: rgb(65, 203, 207);
+}
 .downloads .button-blue, .downloads .button-red {
     width: auto;
-    float: right;
     font-size: 0.8em;
     border: none;
     padding: 5px;
-    margin: 0 0 0 5px;}
+    margin: 0 0 0 5px;
+}
 
-.downloads th, .downloads td {
-    text-align: right;}
+.downloads form {
+    display: inline-block;
+}
+
+th.downloads, td.downloads {
+    text-align: right;
+}
 
 .downloads th:nth-child(1), .downloads td:nth-child(1) {
     text-align: left;}
@@ -218,6 +242,19 @@ details#image-maps > summary, details#options > summary {
   
 #footer-line a:hover {
     color: rgb(65, 203, 207);
+}
+
+.blink_me {
+    animation: blinker 1.5s ease 0.2s;
+}
+  
+@keyframes blinker {
+      15% { opacity: 0.3; color: red; }
+      30% { opacity: 1; }
+      55% { opacity: 0.3; }
+      70% { opacity: 1; }
+      85% { opacity: 0.3; color: red; }
+      100% { opacity: 1; color: none; }
 }
 
 /*Styles for small screens*/

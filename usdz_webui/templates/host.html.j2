@@ -1,0 +1,96 @@
+{% extends "base.html.j2" %}
+{% block title %}Sharing settings{% endblock %}
+{% block head %}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/addhost.js') }}"></script>
+{% endblock %}
+
+{% block page_title %}
+    {{ content.title }}
+{% endblock %}
+
+{% block description %}
+    <p>Setup an FTP host to share files on a public remote server.</p>
+{% endblock %}
+
+{% block content %}
+<form name="host" method="post" action="{{ content.urls.host }}" enctype="multipart/form-data" class="montform" id="reused_form">
+    <div id="hostform">
+        <div class="file">
+            <label>
+                FTP Host
+                <input name="host" type="text" placeholder="ftp.remotehost.org" required class="color-channel"
+                value="{{ config.get('host', '') }}">
+                <br />
+            </label>
+            <span class="description">Host name of the remote host. No need to specify the protocol with ftp://</span>
+        </div>
+        <div class="file">
+            <label>
+                FTP Port
+                <input name="port" type="number" placeholder="22" class="color-channel"
+                value="{{ config.get('port', '') }}">
+                <br />
+            </label>
+            <span class="description">Port of the remote host to connect to. SFTP 22, FTPS 990/989</span>
+        </div>
+        <div class="file">
+            <label>
+                Remote Url
+                <input name="url" type="url" placeholder="https://www.remotehost.org/my_directory" class="color-channel"
+                value="{{ config.get('url', '') }}">
+                <br />
+            </label>
+            <span class="description">Remote Url of your FTP directory.</span>
+        </div>
+        <div class="file">
+            <label>
+                Remote directory
+                <input name="remote_dir" type="text" placeholder="my_directory" class="color-channel"
+                value="{{ config.get('remote_dir', '') }}">
+                <br />
+            </label>
+            <span class="description">If you want to use a sub directory on your remote host. Will be created if it does not exist.
+            Otherwise leave blank.</span>
+        </div>
+        <div class="file">
+            <label>
+                FTP User
+                <input name="user" type="text" placeholder="User" required class="color-channel"
+                value="{{ config.get('user', '') }}">
+            </label>
+            <span class="description">FTP Username with sufficient rights to create directories and files</span>
+        </div>
+        <div class="file">
+            <label>
+                FTP Password
+                <input name="pswd" type="password" placeholder="Password" required class="color-channel">
+            </label>
+            <span class="description"> </span>
+        </div>
+        <div class="file">
+            <label>
+                Confirm Password
+                <input name="confirm_pswd" type="password" placeholder="Password" required class="color-channel">
+            </label>
+            <span class="description"> </span>
+        </div>
+        <div class="file">
+            <label>
+                Protocol
+                <select name="protocol" class="color-channel" id="protocol" value="ftp">
+                    <option value="sftp" {% if config['protocol'] == 'sftp' %}selected="selected"{% endif %}>SFTP - SSH File Transfer Protocol</option>
+                    <option value="ftp" {% if config['protocol'] == 'ftp' %}selected="selected"{% endif %}>FTPS - using TLS if available</option>
+                </select>
+            </label>
+            <span class="description">Choose either SFTP secure file transfer over SSH or FTPS file transfer protocol over SSL.
+            Note that FTPS authentication is encrypted but file transfer may be un-encrypted.</span>
+        </div>
+    </div>
+    <br />
+    <div class="submit">
+        <button type="submit" class="button-blue">SUBMIT</button>
+        <div class="ease"></div>
+    </div>
+</form>
+{% endblock content %}

@@ -2,25 +2,99 @@ import shutil
 import time
 from datetime import datetime
 from pathlib import Path
-from shutil import rmtree
+from shutil import rmtree, copy
 from typing import Dict, Tuple, Union
 
+from flask import render_template
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 
 from app import App
 from modules import filesize
+from modules.ftp import FtpRemote
 from modules.globals import APP_NAME, OUT_SUFFIX, get_current_modules_dir
 from modules.log import setup_logger
+from modules.settings import JsonConfig
 from modules.site import JobFormFields, Urls
 
 _logger = setup_logger(__name__)
 
 
 class FileManager:
+    static_download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads
+    static_img_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_images
+
     def __init__(self):
         self.job_dir = None
         self.files = dict()
+
+    @classmethod
+    def remote_share_download(cls, folder_id: str, dl: dict,
+                              form: ImmutableMultiDict, files: ImmutableMultiDict) -> bool:
+        # -- Get Download directory --
+        download_dir = cls.static_download_dir / folder_id
+        if not download_dir.exists():
+            _logger.error('File to share not found at: %s', download_dir.as_posix())
+            return False
+
+        # -- Clear and create share sub-directory --
+        share_dir = download_dir / 'share'
+        if not cls.clear_folder(share_dir, re_create=True):
+            _logger.error('Could not create share folder at: %s', share_dir.as_posix())
+            return False
+
+        # -- Save preview image file in share folder --
+        img_file = files.get('preview_image_store')
+        if not img_file:
+            img_file = cls.static_img_dir / 'preview.jpg'
+            img_path = share_dir / img_file.name
+            try:
+                copy(img_file, img_path)
+            except Exception as e:
+                _logger.error('Error copying preview image: %s', e)
+        else:
+            img_path = share_dir / img_file.filename
+            img_file.save(img_path.as_posix())
+
+        # -- Save usdz file in share folder --
+        in_scene_file = download_dir / dl.get('name')
+        scene_path = share_dir / secure_filename(form.get('filename'))
+        try:
+            copy(in_scene_file, scene_path)
+        except Exception as e:
+            _logger.error('Could not save USDZ output file: %s', e)
+            return False
+
+        # -- Create index html file --
+        index_html_path = share_dir / 'index.html'
+        with App.app_context():
+            with open(index_html_path.as_posix(), 'w') as f:
+                f.write(
+                    render_template(
+                        Urls.templates.get(Urls.share_template),
+                        page_description=form.get('footer-line'),
+                        usdz_file=scene_path.name,
+                        preview_image_url=img_path.name
+                        )
+                    )
+
+        # -- Transfer Remote Share folder --
+        conf = JsonConfig.load_config(App.config.get('SHARE_HOST_CONFIG_PATH'))
+        remote = FtpRemote(conf)
+        if not remote.connect():
+            return False
+        if not remote.create_dir(form.get('share_folder')):
+            return False
+
+        # Upload files
+        for local_file in (index_html_path, scene_path, img_path):
+            if not remote.put(local_file):
+                return False
+
+        # Clean up share directory
+        cls.clear_folder(share_dir, re_create=False)
+
+        return True
 
     @classmethod
     def clear_upload_folders(cls, jobs) -> bool:
@@ -50,7 +124,7 @@ class FileManager:
         if re_create:
             try:
                 folder.mkdir(exist_ok=False)
-            except FileExistsError or FileNotFoundError:
+            except FileExistsError or FileNotFoundError or PermissionError:
                 _logger.error('Error re-creating upload folder!', exc_info=1)
                 return False
 
@@ -85,16 +159,15 @@ class FileManager:
 
         return new_file_path
 
-    @staticmethod
-    def list_downloads() -> Dict[str, Dict]:
+    @classmethod
+    def list_downloads(cls) -> Dict[str, Dict]:
         """ Return contents of download directory:
             Dict[folder_name(unique)] = Tuple[download_url, file_name, file_size]
         """
         download_files: Dict[str, Dict] = dict()
-        static_download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads
 
         # Iterate sub directory's
-        for folder in static_download_dir.glob('*'):
+        for folder in cls.static_download_dir.glob('*'):
             for file in folder.glob('*.*'):
                 # Create url
                 download_url = f'{Urls.static_downloads}/{folder.name}/{file.name}'
@@ -116,7 +189,7 @@ class FileManager:
 
     @classmethod
     def delete_download(cls, folder_id: str) -> bool:
-        download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads / folder_id
+        download_dir = cls.static_download_dir / folder_id
 
         if cls.clear_folder(download_dir, re_create=False):
             return True

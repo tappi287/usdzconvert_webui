@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from pathlib import Path
@@ -9,6 +10,14 @@ APP_FRIENDLY_NAME = 'usdzconvert_webui'
 OUT_SUFFIX = '.usdz'
 BASE_PATH = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__ + '/..')))
 SETTINGS_DIR_NAME = APP_FRIENDLY_NAME
+
+VERSION = '0.0.0'
+try:
+    with open(os.path.join(BASE_PATH, 'package.json'), 'rb') as f:
+        pkg = json.load(f)
+    VERSION = pkg.get('version', VERSION)
+except Exception as e:
+    print(e)
 
 
 def get_current_modules_dir() -> str:

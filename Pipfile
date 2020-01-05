@@ -6,11 +6,17 @@ verify_ssl = true
 [dev-packages]
 rope = "*"
 pylint = "*"
+pynsist = "*"
 
 [packages]
 flask = "*"
 flask_sqlalchemy = "*"
 appdirs = "*"
+jsonpickle = "*"
+cryptography = "*"
+ujson = "*"
+paramiko = "*"
+waitress = "*"
 
 [requires]
 python_version = "3.8.1"

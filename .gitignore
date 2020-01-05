@@ -4,6 +4,8 @@
 /.idea/
 /.vscode/
 /__pycache__/
-/usdz_webui/static/downloads/**
 /converter/
 *.pyc
+/usdz_webui/static/downloads/
+/usdz_webui/static/downloads/**
+/usdz_webui/static/downloads/

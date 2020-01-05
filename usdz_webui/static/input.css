@@ -146,11 +146,11 @@ border: 3px solid rgba(0,0,0,0);
 }
 #scene-file-spacer {
   height: 70px;
-  background-image: url(./cloud_upload-24px.svg);
+  background-image: url(./img/cloud_upload-24px.svg);
 }
 #texture-map-spacer {
   height: 70px;
-  background-image: url(./insert_photo-24px.svg);
+  background-image: url(./img/insert_photo-24px.svg);
 }
 #scene-file-dropzone input {
   color: #3c3c3c;
@@ -171,4 +171,17 @@ div.texture-map-entry {
   height: 100px;*/
   background: lightgrey;
   border-radius: 10px;
+}
+#hostform .file {
+  transition: all 0.3s ease;
+}
+#hostform .file.invalid {
+  background-color: rgb(255, 184, 184);
+}
+#hostform label input {
+  display: block;
+}
+
+#hostform input {
+  width: 40%;
 }

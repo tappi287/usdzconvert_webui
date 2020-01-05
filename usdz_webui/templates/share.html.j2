@@ -1,0 +1,79 @@
+{% extends "base.html.j2" %}
+
+{% set remote_dir = '/%s'|format(config.get('remote_dir')|e) if config.get('remote_dir') != '' else '' %}
+{% set base_url = '%s%s'|format(config.get('url'), remote_dir) %}
+{% set share_folder_name = download.get('name').rsplit('.', 1)[0] %}
+{% set remote_url = '%s/%s'|format(base_url|e, share_folder_name|e) %}
+
+{% block title %}Share{% endblock %}
+{% block head %}
+    {{ super() }}
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/share.js') }}"></script>
+    <script type="text/javascript">
+        var s = sharePage ( {{ base_url|tojson }})
+    </script>
+{% endblock %}
+
+{% block page_title %}
+    {{ content.title }}
+{% endblock %}
+
+{% block description %}
+    <p>
+    Share an USDZ file on a public remote host on a AR QuickLook enabled html page.
+    Note that users need a >iOS12 device to view the 3d content.
+    Pressing SHARE will take some time to upload to the remote host!
+    </p>
+{% endblock %}
+
+{% block content %}
+<form name="share" method="post" action="{{ content.urls.share }}/{{ folder_id }}" enctype="multipart/form-data" class="montform" id="reused_form">
+    <div id="hostform">
+        <div class="file">
+            <label>
+                Share folder name
+                <input name="share_folder" type="text" required class="color-channel"
+                value="{{ share_folder_name }}">
+                <br />
+            </label>
+            <span class="description">The folder where the file will be accessible as index html page.</span>
+        </div>
+        <div class="file">
+            <label>
+                Remote file name
+                <input name="filename" type="text" required class="color-channel"
+                value="{{ download.get('name') }}">
+                <br />
+            </label>
+            <span class="description">Last modified: {{ download.get('created') }} - Size: {{ download.get('size') }}</span>
+        </div>
+        <div class="file downloads">
+            <label>Remote Url</label>
+            <a id="remote_url" href="{{ remote_url }}">{{ remote_url }}</a>
+            <input name="remote_url" type="url" style="display: none;" value="{{ remote_url }}">
+        </div>
+        <div class="file" id="share-img-dropzone">
+            <label>
+                Preview Image
+            </label>
+            <img id="share-preview-image" src="{{ url_for('static', filename='img/preview.jpg') }}"></img>
+            <div style="height: 20px"></div>
+            <p id="share-img-drop-text" class="description">Drop a preview image for your file or keep the default image</p>
+        </div>
+        <p class="file">
+            <label>
+                Footer line
+                <textarea name="footer-line" class="feedback-input" required id="commands" 
+                >Visit this page with your iOS12 device to view this model in Augmented Reality</textarea>
+            </label>
+            <span class="description">Provide a brief description of the page content.</span>
+        </p>
+    </div>
+    <br />
+    <div class="submit">
+        <button type="submit" id="submit-button" class="button-blue">SHARE</button>
+        <div class="ease"></div>
+    </div>
+</form>
+{% endblock content %}

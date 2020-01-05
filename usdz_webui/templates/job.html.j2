@@ -50,6 +50,10 @@
                                     <form method="get" action="{{ job.direct_download_url() }}" class="montform">
                                         <button type="submit" id="download-{{ job.job_id }}" class="button-blue">Download</button>
                                     </form>
+                                    <form method="get" action="{{ content.urls.share }}/{{ job.download_dir_id() }}" class="montform">
+                                        <button type="submit" id="share_{{ job.download_dir_id() }}" class="button-blue" 
+                                        title="Share the file on a public remote server">Share</button>
+                                    </form>
                                 {% endif %}
                             </td>
                         {% endif %}

@@ -111,6 +111,10 @@ class ConversionJob(db.Model):
             return f'{Urls.static_downloads}/' \
                    f'{secure_filename(self.job_dir().name)}/{self.out_file().name}'
 
+    def download_dir_id(self) -> Union[None, str]:
+        if self.out_file().exists() and self.completed:
+            return f'{secure_filename(self.job_dir().name)}'
+
     def get_state(self) -> str:
         return self.state_names.get(self.state, 'No job state set')
 

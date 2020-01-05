@@ -1,3 +1,4 @@
+from modules.globals import VERSION
 
 
 class JobFormFields:
@@ -69,20 +70,26 @@ class Urls:
     usd_man = '/usd_manual'
     downloads = '/downloads'
     download_delete = '/downloads/delete'
-    static_downloads = 'static/downloads'
     about = '/about'
+    host = '/addhost'
+    share = '/share'
+    share_template = 'share/template'
     log = '/log'
 
-    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads}
+    static_downloads = 'static/downloads'
+    static_images = 'static/img'
+
+    navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads, 'share': host}
 
     templates = {root: 'index.html.j2', job_page: 'job.html.j2', usd_man: 'usdman.html.j2', log: 'log.html.j2',
-                 downloads: 'downloads.html.j2', about: 'about.html.j2'}
+                 downloads: 'downloads.html.j2', about: 'about.html.j2', host: 'host.html.j2',
+                 share: 'share.html.j2', share_template: 'share_template.html.j2'}
 
 
 class Site:
     title = 'USDZ Conversion Server'
     job_title = 'Job Page'
-    version = ''
+    version = VERSION
 
     urls = Urls
     job_form = JobFormFields()

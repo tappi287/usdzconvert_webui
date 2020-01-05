@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ content.title }} - {% block title %}{% endblock %}</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='USD_Logo.png', version='1') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/USD_Logo.png', version='1') }}">
     <link href="https://fonts.googleapis.com/css?family=Lato|Montserrat|Inconsolata&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
@@ -31,7 +31,7 @@
                 </div>
             </nav>
             <a href="/">
-            <img class="title-img" src="{{ url_for('static', filename='USD_Logo.svg', version='1') }}" width="46"
+            <img class="title-img" src="{{ url_for('static', filename='img/USD_Logo.svg', version='1') }}" width="46"
                     height="46"/>
             </a>
             <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
@@ -44,7 +44,7 @@
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
                 <div class="server-message">
-                    <span> Server Message</span>
+                    <span class="blink_me">Server Message</span>
                     <ul class=flashes>
                         {% for message in messages %}
                         <li>{{ message }}</li>
@@ -60,7 +60,7 @@
             <!-- /Content Area -->
             <div id="footer-line">
                 <ul>
-                    <li><a href="https://github.com/tappi287/usdzconvert_webui">Github</a> project page</li>
+                    <li>{{ content.title }} v{{ content.version }} @ <a href="https://github.com/tappi287/usdzconvert_webui">Github</a></li>
                     <li>Made with <a href="https://palletsprojects.com/p/flask/">Flask</a></li>
                     <li><a href="{{ content.urls.about }}">License Notes</a></li>
                 </ul>
