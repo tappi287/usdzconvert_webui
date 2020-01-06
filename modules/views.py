@@ -186,11 +186,12 @@ def host_post():
             del ftp
         except Exception as e:
             result = False
-            msg = f'Could not connect to the configured remote host! {e}'
+            App.logger.error(e)
         finally:
-            flash(msg)
             if not result:
-                App.logger.error(msg)
+                msg = f'Could not connect to the configured remote host!'
+
+            flash(msg)
     else:
         flash('Sharing host configuration could not be saved! The server has no instance directory '
               'with an appropriate key file or the filesystem could not write the file. ')

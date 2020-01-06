@@ -80,7 +80,8 @@
                 Protocol
                 <select name="protocol" class="color-channel" id="protocol" value="ftp">
                     <option value="sftp" {% if config['protocol'] == 'sftp' %}selected="selected"{% endif %}>SFTP - SSH File Transfer Protocol</option>
-                    <option value="ftp" {% if config['protocol'] == 'ftp' %}selected="selected"{% endif %}>FTPS - using TLS if available</option>
+                    <option value="ftps" {% if config['protocol'] == 'ftps' %}selected="selected"{% endif %}>FTPS - using TLS if available</option>
+                    <option value="ftp" {% if config['protocol'] == 'ftp' %}selected="selected"{% endif %}>FTP - no encryption</option>
                 </select>
             </label>
             <span class="description">Choose either SFTP secure file transfer over SSH or FTPS file transfer protocol over SSL.

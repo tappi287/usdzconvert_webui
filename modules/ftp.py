@@ -1,5 +1,5 @@
 import time
-from ftplib import FTP_TLS
+from ftplib import FTP_TLS, FTP
 from pathlib import Path
 from typing import Union
 
@@ -26,6 +26,7 @@ class FtpRemote:
         self.pswd = conf.get('pswd')
 
         self.is_sftp = True if conf.get('protocol') == 'sftp' else False  # ftp / sftp
+        self.is_ftps = True if conf.get('protocol') == 'ftps' else False  # ftp / ftps
 
         self.connections = 0
         self.remote_dir = conf.get('remote_dir')
@@ -46,14 +47,21 @@ class FtpRemote:
 
     def _connect_ftp(self) -> bool:
         try:
-            self.ftps = FTP_TLS(self.host)
+            if self.is_ftps:
+                self.ftps = FTP_TLS(self.host)
+            else:
+                self.ftps = FTP(self.host)
+
             self.ftps.login(self.user, self.pswd)
             self.connections += 1
 
             # switch to secure data connection.. IMPORTANT! Otherwise, only the user and password is
             # encrypted and not all the file data.
-            prot_p_result = self.ftps.prot_p()
-            _logger.info('FTP Secure Connection result %s', prot_p_result)
+            if self.is_ftps:
+                prot_p_result = self.ftps.prot_p()
+                _logger.info('FTP Secure Connection result %s', prot_p_result)
+            else:
+                _logger.info('Connecting to FTP without encryption.')
 
             # Change/Create current working directory
             if self.remote_dir:
