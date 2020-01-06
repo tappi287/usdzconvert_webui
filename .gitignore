@@ -6,6 +6,6 @@
 /__pycache__/
 /converter/
 *.pyc
-/usdz_webui/static/downloads/
 /usdz_webui/static/downloads/**
 /usdz_webui/static/downloads/
+/dist/
