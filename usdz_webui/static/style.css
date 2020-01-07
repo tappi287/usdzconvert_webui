@@ -145,8 +145,9 @@ details#image-maps > summary, details#options > summary {
 #share-img-drop-text {
     text-align: center;
 }
-#remote_url {
+#remote_url, #remote_file_url {
     float: right;
+    word-break: break-word;
 }
 
 .button-red {

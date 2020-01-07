@@ -49,9 +49,14 @@
             <span class="description">Last modified: {{ download.get('created') }} - Size: {{ download.get('size') }}</span>
         </div>
         <div class="file downloads">
-            <label>Remote Url</label>
+            <label>Remote Page Url</label>
             <a id="remote_url" href="{{ remote_url }}">{{ remote_url }}</a>
             <input name="remote_url" type="url" style="display: none;" value="{{ remote_url }}">
+        </div>
+        <div class="file downloads">
+            <label>Remote File Url</label>
+            <a id="remote_file_url" href="{{ remote_url }}/{{ download.get('name') }}">{{ remote_url }}/{{ download.get('name') }}</a>
+            <input name="remote_file_url" type="url" style="display: none;" value="{{ remote_url }}">
         </div>
         <div class="file" id="share-img-dropzone">
             <label>

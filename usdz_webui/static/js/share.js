@@ -49,31 +49,39 @@ function dropPreviewImage (event, inputs) {
 function sharePage (baseUrl) {
   console.log('BaseUrl: ' + baseUrl)
 
-  function updateUrl (a, urlStore, urlInput) {
-    const validValue = validateUrlInput(urlInput.value)
-    urlInput.value = validValue
+  function updateUrl (a, urlStore, urlInput, fileUrl) {
+    var url = ''
 
-    a.href = baseUrl + '/' + validValue
-    a.innerHTML = baseUrl + '/' + validValue
-    urlStore.value = baseUrl + '/' + validValue
+    if (fileUrl !== null) {
+      url = baseUrl + '/' + urlInput.value + '/' + fileUrl
+    } else {
+      url = baseUrl + '/' + urlInput.value
+    }
+    a.href = url; a.innerHTML = url; urlStore.value = url
   }
 
   function setupInputs (inputs) {
     const a = document.getElementById('remote_url')
+    const aFile = document.getElementById('remote_file_url')
     const shareName = inputs.share_folder
     const fileInput = inputs.filename
     const urlInput = inputs.remote_url
+    const urlFileInput = inputs.remote_file_url
 
     /* Validate input value while typing and update remote url */
     shareName.addEventListener('input', function (event) {
-      updateUrl(a, urlInput, event.target)
+      urlInput.value = validateUrlInput(urlInput.value)
+
+      updateUrl(a, urlInput, event.target, null)
+      updateUrl(aFile, urlFileInput, event.target, fileInput.value)
     })
     fileInput.addEventListener('input', function (event) {
       event.target.value = validateFileNameInput(event.target.value)
     })
 
     /* Validate input values upon load */
-    updateUrl(a, urlInput, shareName)
+    updateUrl(a, urlInput, shareName, null)
+    updateUrl(aFile, urlFileInput, shareName, fileInput.value)
     fileInput.value = validateFileNameInput(fileInput.value)
   }
 
