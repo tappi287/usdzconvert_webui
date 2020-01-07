@@ -261,7 +261,7 @@ class FileManager:
         # Set out file path
         if file_path.suffix == self.out_suffix:
             # |in>> one.usdz |out>> one_out.usdz
-            self.files['out_file'] = {'file_path': file_path.with_name(f'{file_path.stem}_out{file_path.suffix}')}
+            self.files['out_file'] = {'file_path': file_path.with_name(f'{file_path.stem}_out{self.out_suffix}')}
         else:
             # |in>> one.abc |out>> one.usdz
             self.files['out_file'] = {'file_path': file_path.with_suffix(self.out_suffix)}
@@ -332,7 +332,7 @@ class FileManager:
         :return: bool, message
         """
         self.job_dir = self.create_job_dir()
-        self.out_suffix = form.get(JobFormFields.options_by_id.get('outSuffix'), self.out_suffix)
+        self.out_suffix = form.get('outSuffix', self.out_suffix)
         if not self._save_scene_files(files):
             return False, 'Scene file not found or not supported.'
 

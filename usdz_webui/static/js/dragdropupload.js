@@ -20,6 +20,18 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
     return extension && extension[1]
   }
 
+  function guessMapTypeByFileName (filename) {
+    if (filename.match(/.*(metallic)|(metalness)|(specular)/i)) { return 'metallic' }
+    if (filename.match(/.*(normal)|(bump)/i)) { return 'normal' }
+    if (filename.match(/.*(emissiveColor)|(emissive)/i)) { return 'emissiveColor' }
+    if (filename.match(/.*(roughness)|(rough)|(roughnes)/i)) { return 'roughness' }
+    if (filename.match(/.*(occlusion)|(ao)/i)) { return 'occlusion' }
+    if (filename.match(/.*(opacity)|(alpha)/i)) { return 'opacity' }
+    if (filename.match(/.*(clearcoat)|(coat)/i)) { return 'clearcoat' }
+    if (filename.match(/.*(metallic)|(metalness)/i)) { return 'clearcoatRoughness' }
+    return 'diffuseColor'
+  }
+
   function isFileMapAllowed (fileExt) {
     if (uploadAllowedMapExt.indexOf(fileExt) === -1) {
       return false
@@ -175,6 +187,7 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
 
       /* Update texture type desc span on Map type <select> change event */
       if (mapTypeSelect != null && mapTypeDescSpan != null && channelSelect != null) {
+        mapTypeSelect.value = guessMapTypeByFileName(file.name)
         mapTypeDescSpan.innerHTML = textureTypesDict[mapTypeSelect.value].desc
         channelSelect.setAttribute('disabled', 'disabled')
         updateMapTypeDesc(mapTypeSelect, mapTypeDescSpan, channelSelect)
