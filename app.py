@@ -7,7 +7,6 @@ from flask_sqlalchemy import SQLAlchemy
 from modules.globals import APP_NAME
 from modules.log import setup_logging
 
-# TODO: move downloads out of static dir
 # TODO: refactor backEnd > frontEnd variable exchange
 # TODO: provide install script for instance dir config
 # TODO: build USD with Alembic support [Done - Windows]

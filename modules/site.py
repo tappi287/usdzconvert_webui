@@ -105,7 +105,6 @@ class Urls:
     share_template = 'share/template'
     log = '/log'
 
-    static_downloads = 'static/downloads'
     static_images = 'static/img'
 
     navigation = {'jobs': job_page, 'manual': usd_man, 'downloads': downloads, 'share': host}

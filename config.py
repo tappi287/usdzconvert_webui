@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from modules.globals import upload_path, get_current_modules_dir
+from modules.globals import upload_path, get_current_modules_dir, download_path
 
 UPLOAD_FOLDER = upload_path()
+DOWNLOAD_FOLDER = download_path()
 UPLOAD_ALLOWED_SCENE = {'obj', 'gltf', 'bin', 'glb', 'fbx', 'abc', 'usd', 'usda', 'usdc', 'usdz'}
 UPLOAD_ALLOWED_MAPS = {'tga', 'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_ALLOWED_EXT = UPLOAD_ALLOWED_SCENE.union(UPLOAD_ALLOWED_MAPS)

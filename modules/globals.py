@@ -62,5 +62,9 @@ def upload_path() -> Path:
     return Path(_check_and_create_dir(Path(get_settings_dir()) / f'upload'))
 
 
+def download_path() -> Path:
+    return Path(_check_and_create_dir(Path(get_settings_dir()) / 'downloads'))
+
+
 DEFAULT_LOG_LEVEL = 'INFO'
 LOG_FILE_PATH = Path(get_log_dir()) / f'{APP_FRIENDLY_NAME}.log'

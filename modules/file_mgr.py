@@ -21,7 +21,7 @@ _logger = setup_logger(__name__)
 
 
 class FileManager:
-    static_download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads
+    instance_download_dir = App.config.get('DOWNLOAD_FOLDER')
     static_img_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_images
 
     def __init__(self):
@@ -32,7 +32,7 @@ class FileManager:
     def remote_share_download(cls, folder_id: str, dl: dict,
                               form: ImmutableMultiDict, files: ImmutableMultiDict) -> bool:
         # -- Get Download directory --
-        download_dir = cls.static_download_dir / folder_id
+        download_dir = cls.instance_download_dir / folder_id
         if not download_dir.exists():
             _logger.error('File to share not found at: %s', download_dir.as_posix())
             return False
@@ -130,8 +130,8 @@ class FileManager:
 
         return True
 
-    @staticmethod
-    def move_to_static_dir(file: Path, create_dir: str = '') -> Union[None, Path]:
+    @classmethod
+    def move_to_static_dir(cls, file: Path, folder_id: str = '') -> Union[None, Path]:
         """
         Move a file to the static download dir.
         Provide a string with create_dir to create a sub directory of that name.
@@ -139,17 +139,14 @@ class FileManager:
         if not file.is_file() or not file.exists():
             return
 
-        static_download_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_downloads
+        job_download_dir = cls.instance_download_dir / secure_filename(folder_id)
+        try:
+            job_download_dir.mkdir(parents=True, exist_ok=True)
+        except FileExistsError or FileNotFoundError:
+            _logger.error('Error creating download folder!', exc_info=1)
+            return
 
-        if create_dir:
-            static_download_dir = static_download_dir / secure_filename(create_dir)
-            try:
-                static_download_dir.mkdir(parents=True, exist_ok=True)
-            except FileExistsError or FileNotFoundError:
-                _logger.error('Error creating download folder!', exc_info=1)
-                return
-
-        new_file_path = static_download_dir / file.name
+        new_file_path = job_download_dir / file.name
 
         try:
             shutil.move(file.as_posix(), new_file_path.as_posix())
@@ -167,10 +164,10 @@ class FileManager:
         download_files: Dict[str, Dict] = dict()
 
         # Iterate sub directory's
-        for folder in cls.static_download_dir.glob('*'):
+        for folder in cls.instance_download_dir.glob('*'):
             for file in folder.glob('*.*'):
                 # Create url
-                download_url = f'{Urls.static_downloads}/{folder.name}/{file.name}'
+                download_url = f'{Urls.downloads}/{folder.name}/{file.name}'
 
                 try:
                     # File size
@@ -189,7 +186,7 @@ class FileManager:
 
     @classmethod
     def delete_download(cls, folder_id: str) -> bool:
-        download_dir = cls.static_download_dir / folder_id
+        download_dir = cls.instance_download_dir / folder_id
 
         if cls.clear_folder(download_dir, re_create=False):
             return True

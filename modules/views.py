@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from flask import flash, redirect, render_template, request, url_for, jsonify, make_response
+from flask import flash, redirect, render_template, request, url_for, jsonify, make_response, send_from_directory, \
+    send_file
 
 from app import App, db
 from modules.file_mgr import FileManager
@@ -86,9 +87,9 @@ def job_download(job_id):
     job = JobManager.get_job_by_id(job_id)
     App.logger.info('Received Download request for job_id: %s', job_id)
 
-    if job and job.download_filename():
+    if job and job.direct_download_url():
         App.logger.info('Serving with file: %s', job.download_filename())
-        return redirect(url_for('static', filename=job.download_filename()))
+        return redirect(job.direct_download_url())
     else:
         App.logger.info('Could not find job download file to serve: %s', job_id)
         return redirect(Urls.job_page)
@@ -109,6 +110,12 @@ def static_downloads():
     sorted_dls = sorted(dl_dict.items(), key=lambda x: x[1]['created'], reverse=True)  # Sort by date descending
     return render_template(Urls.templates[Urls.downloads], content=Site(),
                            downloads=sorted_dls)
+
+
+@App.route(f'{Urls.downloads}/<download_folder_id>/<filename>')
+def download(download_folder_id, filename):
+    download_dir = App.config.get('DOWNLOAD_FOLDER') / download_folder_id
+    return send_from_directory(download_dir, filename, as_attachment=True)
 
 
 @App.route(f'{Urls.download_delete}/<download_folder_id>')

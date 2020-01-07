@@ -28,7 +28,7 @@
                     <tr class="title">
                         <th>Status</th>
                         <th>Progress</th>
-                        {% if job.completed or job.download_filename() %}<th style="text-align: right;">Actions</th>{% endif %}
+                        {% if job.completed or job.direct_download_url() %}<th style="text-align: right;">Actions</th>{% endif %}
                     </tr>
                     <tr>
                         <td {% if job.state > job.States.finished %}class="error"{% endif %}>
@@ -40,13 +40,13 @@
                                 {{ job.progress|default('0') }}% {{ '[current]' if job.is_current else '' }}
                             </label>
                         </td>
-                        {% if job.completed or job.download_filename() %}
+                        {% if job.completed or job.direct_download_url() %}
                             <td class="downloads">
                                 <form method="get" action="{{ content.urls.job_delete }}/{{ job.job_id }}" class="montform">
                                     <button title="Permanently delete the job. Output files will remain in Downloads."
                                     type="submit" id="delete-{{ job.job_id }}" class="button-red">Delete</button>
                                 </form>
-                                {% if job.download_filename() %}
+                                {% if job.direct_download_url() %}
                                     <form method="get" action="{{ job.direct_download_url() }}" class="montform">
                                         <button type="submit" id="download-{{ job.job_id }}" class="button-blue">Download</button>
                                     </form>
