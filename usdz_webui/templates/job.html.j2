@@ -87,14 +87,16 @@
                             <th>File</th>
                             <th>Channel</th>
                             <th>Material</th>
+                            <th>UV Set</th>
                             <th>Map Type</th>
                         </tr>
-                        {% for file_id, file, channel, material, map_type in job.list_files() %}
+                        {% for file_id, file, channel, material, uv_set, map_type in job.list_files() %}
                         <tr>
                             <td>{{ file_id }}</td>
                             <td>{{ file }}</td>
                             <td>{{ channel }}</td>
                             <td>{{ material }}</td>
+                            <td>{{ uv_set }}</td>
                             <td>{{ map_type }}</td>
                         </tr>
                         {% endfor %}
