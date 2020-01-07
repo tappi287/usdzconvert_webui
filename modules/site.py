@@ -1,16 +1,63 @@
 from modules.globals import VERSION
+from modules.settings import JsonPickleHelper
+
+
+class WithJsonDictMethod:
+    @classmethod
+    def as_json_dict(cls):
+        json_friendly_class_dict = dict()
+
+        for k, v in cls.__dict__.items():
+            if k.startswith('__'):
+                continue
+            if JsonPickleHelper.is_serializable(v):
+                json_friendly_class_dict[k] = v
+
+        return json_friendly_class_dict
 
 
 class JobFormFields:
-    class TextureMap:
+    class TextureMap(WithJsonDictMethod):
         """ FrontEnd will enumerate eg. texture_file_1 """
         file = 'texture_file'  # FrontEnd class name, BackEnd Form key
+        file_label = 'texture_file_label'
         type = 'texture_type'
+        type_desc = 'texture_type_description'
         channel = 'texture_channel'
         material = 'texture_material'
+        uv_coord = 'uv_coord'
+        uv_desc = "Leave blank to auto-detect appropriate UV set. [Optional] Enter the name of the UV set to " \
+                  "use for the current material."
         material_desc = "Leave blank to assign map to the Default material. [Optional] enter the name of the input " \
                         "file material you want this texture map assigned to"
         file_storage = 'texture_map'
+
+        # Html template will use above to set html element class name
+        # FrontEnd will iterate html_elements list and enumerate eg. texture_type_1
+        html_element_class_names = [file_label, file, type, channel, material, type_desc]
+
+        # Template values
+        texture_map_types = ['diffuseColor', 'normal', 'emissiveColor', 'metallic', 'roughness', 'occlusion',
+                             'opacity', 'clearcoat', 'clearcoatRoughness']
+        texture_map_channel = [False, False, False, True, True, True, True, True, True]
+        texture_map_labels = [
+            'Diffuse Map', 'Normal Map', 'Emissive Map', 'Metallic Map', 'Roughness Map', 'Occlusion Map',
+            'Opacity Map',
+            'Clearcoat Map', 'Clearcoat Roughness Map']
+        texture_map_desc = ['Use <file> as texture for diffuseColor.', 'Use <file> as texture for normal.',
+                            'Use <file> as texture for emissiveColor.',
+                            'Use <file> as texture for metallic. [Optional] Select texture color channel (r, g, '
+                            'b or a)',
+                            'Use <file> as texture for roughness. [Optional] Select texture color channel (r, g, '
+                            'b or a)',
+                            'Use <file> as texture for occlusion. [Optional] Select texture color channel (r, g, '
+                            'b or a)',
+                            'Use <file> as texture for opacity. [Optional] Select texture color channel (r, g, b or a)',
+                            'Use <file> as texture for clearcoat. [Optional] Select texture color channel (r, g, '
+                            'b or a)',
+                            'Use <file> as texture for clearcoat roughness. [Optional] Select texture color channel '
+                            '(r, g, b or a)']
+        texture_map_list = [(t, l, d) for t, l, d in zip(texture_map_types, texture_map_labels, texture_map_desc)]
 
     class OptionField:
         def __init__(self, _id: str, label: str, desc: str, input_type: str):
@@ -28,24 +75,6 @@ class JobFormFields:
     scene_file_field = FileField('scene_file', 'Scene file',
                                  'OBJ / glTF(.gltf/glb) / FBX / Alembic(.abc) / USD(.usd/usda/usdc/usdz)',
                                  True)
-
-    texture_map_types = ['diffuseColor', 'normal', 'emissiveColor', 'metallic', 'roughness', 'occlusion',
-                         'opacity', 'clearcoat', 'clearcoatRoughness']
-    texture_map_channel = [False, False, False, True, True, True, True, True, True]
-    texture_map_labels = [
-        'Diffuse Map', 'Normal Map', 'Emissive Map', 'Metallic Map', 'Roughness Map', 'Occlusion Map', 'Opacity Map',
-        'Clearcoat Map', 'Clearcoat Roughness Map']
-
-    texture_map_desc = ['Use <file> as texture for diffuseColor.', 'Use <file> as texture for normal.',
-                        'Use <file> as texture for emissiveColor.',
-                        'Use <file> as texture for metallic. [Optional] Select texture color channel (r, g, b or a)',
-                        'Use <file> as texture for roughness. [Optional] Select texture color channel (r, g, b or a)',
-                        'Use <file> as texture for occlusion. [Optional] Select texture color channel (r, g, b or a)',
-                        'Use <file> as texture for opacity. [Optional] Select texture color channel (r, g, b or a)',
-                        'Use <file> as texture for clearcoat. [Optional] Select texture color channel (r, g, b or a)',
-                        'Use <file> as texture for clearcoat roughness. [Optional] Select texture color channel '
-                        '(r, g, b or a)']
-    texture_map_list = [(t, l, d) for t, l, d in zip(texture_map_types, texture_map_labels, texture_map_desc)]
 
     option_fields = [
         OptionField('url', 'Url', 'Add URL metadata', 'url'),

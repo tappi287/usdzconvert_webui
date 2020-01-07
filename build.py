@@ -75,6 +75,34 @@ def update_nsis_pypi_wheels(cfg: configparser.ConfigParser, pip: dict):
     cfg['Include']['pypi_wheels'] = cfg_wheel_str
 
 
+class UpdateFlaskConfig:
+    cfg_file = os.path.join(get_current_modules_dir(), 'config.py')
+    nsi_cfg_file = os.path.join(get_current_modules_dir(), 'nsi', 'config.py')
+
+    @classmethod
+    def update_flask_config(cls):
+        build_cfg_lines = list()
+
+        with open(cls.cfg_file, 'r') as f:
+            for line in f.readlines():
+                if "'converter" in line:
+                    line = line.replace("'converter", "'../converter")
+                build_cfg_lines.append(line)
+
+        if os.path.exists(cls.nsi_cfg_file):
+            os.remove(cls.nsi_cfg_file)
+
+        with open(cls.nsi_cfg_file, 'w') as f:
+            f.writelines(build_cfg_lines)
+
+        print('Created updated dist specific Flask config: build_config.py')
+
+    @classmethod
+    def finish(cls):
+        if os.path.exists(cls.nsi_cfg_file):
+            os.remove(cls.nsi_cfg_file)
+
+
 def rem_build_dir():
     build_dir = os.path.join(get_current_modules_dir(), 'build')
 
@@ -145,9 +173,15 @@ def main():
 
     print('Written updated Nsis build configuration to:', build_cfg)
 
+    # Create updated Flask config nsi/config.py
+    UpdateFlaskConfig.update_flask_config()
+
     args = ['pynsist', build_cfg]
     p = Popen(args=args)
     p.wait()
+
+    # Delete nsi/config.py
+    UpdateFlaskConfig.finish()
 
     if p.returncode != 0:
         print('PyNsist could not build installer!')

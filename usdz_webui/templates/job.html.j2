@@ -87,13 +87,15 @@
                             <th>File</th>
                             <th>Channel</th>
                             <th>Material</th>
+                            <th>Map Type</th>
                         </tr>
-                        {% for file_id, file, channel in job.list_files() %}
+                        {% for file_id, file, channel, material, map_type in job.list_files() %}
                         <tr>
                             <td>{{ file_id }}</td>
                             <td>{{ file }}</td>
-                            <td>{{ channel|default('', not None) }}</td>
-                            <td>default</td>
+                            <td>{{ channel }}</td>
+                            <td>{{ material }}</td>
+                            <td>{{ map_type }}</td>
                         </tr>
                         {% endfor %}
                     </table>
@@ -102,10 +104,11 @@
                         <tr><th>Additional Arguments</th></tr>
                         <tr>
                             <td>
-                                {% if not job.option_args %}
+                                {% if not job.option_args and not job.additional_args %}
                                     <pre> - no additional parameters were provided - </pre>
                                 {% else %}
-                                    <pre>{{ job.option_args|join(' ') }}</pre>
+                                    {% set arg_txt = '%s %s'|format(job.additional_args|e, job.option_args|join(' ')|e) %}
+                                    <pre>{{ arg_txt|trim }}</pre>
                                 {% endif %}
                             </td>
                         </tr>

@@ -116,12 +116,13 @@ def create_usdzconvert_arguments(args: list) -> list:
     if not win_interpreter_path.is_absolute():
         win_interpreter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
 
+    # Changed to Path.resolve() to resolve eg. dir1/dir2/../dir3 -> dir1/dir3
     if sys.platform == 'win32':
         # python.exe usdzconvert
-        arguments = [win_interpreter_path.absolute(), usdz_converter_path.absolute()]
+        arguments = [win_interpreter_path.resolve(), usdz_converter_path.resolve()]
     else:
         # python usdzconvert
-        arguments = ['python', usdz_converter_path.absolute()]
+        arguments = ['python', usdz_converter_path.resolve()]
 
     for arg in args:
         arguments.append(arg)

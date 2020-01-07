@@ -64,11 +64,11 @@ def upload_files():
 
         with App.app_context():
             job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
-            App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.job_id)
             App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
 
             db.session.add(job)
             db.session.commit()
+            App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.job_id)
 
         JobManager.run_job_queue()
 

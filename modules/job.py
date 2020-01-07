@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 from pathlib import Path
 from typing import Iterator, Tuple, Union
 
@@ -85,11 +86,16 @@ class ConversionJob(db.Model):
         # Force a database update of PickeldType by reassigning the value
         ConversionJob.query.filter_by(job_id=self.job_id).update(dict(files=self.files))
 
-    def list_files(self) -> Iterator[str]:
+    def list_files(self) -> Iterator[Tuple[str, str, str, str, str]]:
         for file_id, file_entry in self.files.items():
-            p = file_entry.get("file_path")
-            shortend_file_name = p if len(p.as_posix()) < 68 else f'...{p.as_posix()[-65:]}'
-            yield file_id, shortend_file_name, file_entry.get("use_channel")
+            p = file_entry.get("file_path").name
+            short_file_name = p if len(p) < 43 else f'...{p[-40:]}'
+
+            yield (file_id,
+                   short_file_name,
+                   file_entry.get('use_channel', ''),
+                   file_entry.get(JobFormFields.TextureMap.material, ''),
+                   file_entry.get(JobFormFields.TextureMap.type, ''))
 
     def message_update(self, msg):
         self.process_messages += f'{msg}\n'
@@ -197,23 +203,43 @@ class JobManager:
         return False, f'Could not delete job {job_id}. Unknown error.'
 
     @staticmethod
+    def _sort_file_dict_by_args(files: dict) -> OrderedDict:
+        d = OrderedDict()
+        d['scene_file'] = files.get('scene_file')
+        d['out_file'] = files.get('out_file')
+        d['texCoord'] = 'st'
+
+        return d
+
+    @staticmethod
     def create_job_arguments(job: ConversionJob) -> list:
         args = list()
+
+        # inputFile arg
+        args.append(job.files.get('scene_file', dict()).get('file_path', Path('.')).as_posix())
+        # outputFile arg
+        args.append(job.files.get('out_file', dict()).get('file_path', Path('.')).as_posix())
+
+        # --- Add additional arguments ---
+        if job.additional_args:
+            for a in job.additional_args.split(' '):
+                args.append(a)
+
+        # --- Add options ---
+        if job.option_args:
+            args += job.option_args
+
+        # --- Add Material and Texture Map arguments ---
         current_material = ''
 
         # Sort file dict by material entry
         for file_id, file_entry in sorted(job.files.items(), key=lambda f: f[1].get('material', '')):
-            file_path = Path(file_entry.get("file_path"))
-
-            if file_id in ('scene_file', 'out_file'):
-                args.append(file_path.as_posix())  # inputFile/outputFile arguments
-                continue
-
             # Only TextureMaps from here
             # -m materialName -diffuseColor diffuseFile.png
             if not file_id.startswith(JobFormFields.TextureMap.file_storage):
                 continue
 
+            file_path = Path(file_entry.get("file_path"))
             material = file_entry.get(JobFormFields.TextureMap.material)
             if material and material != current_material:
                 current_material = material
@@ -228,15 +254,6 @@ class JobManager:
                 _logger.info('Adding channel argument: %s', channel)
                 args.append(channel.lower())
             args.append(file_path.as_posix())
-
-        # Add options
-        if job.option_args:
-            args += job.option_args
-
-        # Add additional arguments
-        if job.additional_args:
-            for a in job.additional_args.split(' '):
-                args.append(a)
 
         return args
 

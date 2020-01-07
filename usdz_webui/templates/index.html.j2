@@ -7,9 +7,7 @@
         var t = dragDropUpload (
                 {{ upload_allowed_maps_ext|tojson }},
                 {{ upload_allowed_scene_ext|tojson }},
-                {{ content.job_form.texture_map_types|tojson }},
-                {{ content.job_form.texture_map_desc|tojson }},
-                {{ content.job_form.texture_map_channel|tojson }},
+                {{ content.job_form.TextureMap.as_json_dict()|tojson }},
                 {{ content.job_form.scene_file_field.id|tojson }}
             )
     </script>
@@ -85,7 +83,7 @@
             <table>
                 <tr>
                     <th>
-                        <span class="texture_file_label"></span>
+                        <span class="{{ content.job_form.TextureMap.file_label }}"></span>
                     </th>
                 </tr>
                 <tr>
@@ -95,7 +93,7 @@
                         <label>
                             Map Type
                             <select name="{{ content.job_form.TextureMap.type }}" class="{{ content.job_form.TextureMap.type }}">
-                                {% for type, label, desc in content.job_form.texture_map_list %}
+                                {% for type, label, desc in content.job_form.TextureMap.texture_map_list %}
                                     <option value="{{ type }}">{{ label }}</option>
                                 {% endfor %}
                             </select>
@@ -112,11 +110,16 @@
                             <input name="{{ content.job_form.TextureMap.material }}" type="text" 
                             title="{{ content.job_form.TextureMap.material_desc|e }}" class="{{ content.job_form.TextureMap.material }}">
                         </label>
+                        <label>
+                            Uv
+                            <input name="{{ content.job_form.TextureMap.uv_coord }}" type="text" 
+                            title="{{ content.job_form.TextureMap.uv_desc|e }}" class="{{ content.job_form.TextureMap.uv_coord }}">
+                        </label>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <span class="description texture_description">Texture Type Description</span>
+                        <span class="description {{ content.job_form.TextureMap.type_desc }}">Texture Type Description</span>
                     </td>
                 </tr>
             </table>

@@ -1,8 +1,18 @@
 'use_strict'
 
-function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapTypes, textureMapDesc, textureMapChannel, sceneFileInputName) {
+function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapDict, sceneFileInputName) {
   var textureMapCounter = 0
   var dropCounter = 0
+  var textureTypesDict = {}
+
+  /* Create Map/Dict for fast access to Texture Map type and description */
+  for (let i = 0; i < textureMapDict.texture_map_types.length; i++) {
+    const texType = textureMapDict.texture_map_types[i]
+
+    textureTypesDict[texType] = {}
+    textureTypesDict[texType].desc = textureMapDict.texture_map_desc[i]
+    textureTypesDict[texType].channel_available = textureMapDict.texture_map_channel[i]
+  }
 
   function getFileExtension (path) {
     var regexp = /\.([0-9a-z]+)(?:[?#]|$)/i
@@ -45,24 +55,17 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapT
   }
 
   function updateMapTypeDesc (e, descElem, channelElem) {
+    /* Update Texture Map description and channel availability on Texture Type change */
     e.addEventListener('change', function (event) {
-      const textureType = event.target.value
-      let desc = ''
-
-      for (let i = 0; i < textureMapTypes.length; i++) {
-        if (textureMapTypes[i] === textureType) {
-          desc = textureMapDesc[i]
-
-          if (textureMapChannel[i]) {
-            channelElem.removeAttribute('disabled')
-          } else {
-            channelElem.setAttribute('disabled', 'disabled')
-          }
-          break
-        }
+      /* Update channel <select> enabled/disabled */
+      if (textureTypesDict[event.target.value].channel_available) {
+        channelElem.removeAttribute('disabled')
+      } else {
+        channelElem.setAttribute('disabled', 'disabled')
       }
 
-      descElem.innerHTML = desc
+      /* Update Texture Map Type description */
+      descElem.innerHTML = textureTypesDict[event.target.value].desc
     })
   }
 
@@ -128,13 +131,13 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapT
     dropCounter += 1
 
     /* Store the dropped files in hidden input because files array is immutable */
+    const form = document.forms.reused_form
     const f = document.createElement('input')
     f.type = 'file'
     f.name = 'texture_map_store_' + dropCounter
     f.style.display = 'none'
     f.files = event.dataTransfer.files
-    /* add the hidden input to form */
-    document.getElementById('reused_form').appendChild(f)
+    form.appendChild(f)
 
     /* Disable async uploads for now */
     if (f === null) {
@@ -143,40 +146,38 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapT
     }
 
     /* Create a Texture Map Field from hidden template for each dropped file */
-    for (let fileIdx = 0; fileIdx < event.dataTransfer.files.length; fileIdx++) {
-      const filename = event.dataTransfer.files[fileIdx].name
-      var textureNode = document.getElementById('texture-form-template').cloneNode(true)
-
+    for (const file of event.dataTransfer.files) {
       textureMapCounter += 1
-      let mapTypeElem = null
-      let mapTypeDescElem = null
-      let channelElem = null
+
+      /* Clone Texture Map Entry template */
+      var textureNode = document.getElementById('texture-form-template').cloneNode(true)
       textureNode.style.display = 'block'
-      textureNode.id = 'texture_map_' + textureMapCounter
+      textureNode.id = textureMapDict.file_storage + textureMapCounter
 
-      /* Rename input elements with unique names */
-      const t = ['texture_file_label', 'texture_file', 'texture_type', 'texture_channel', 'texture_material', 'texture_description']
+      /* Prepare storage of relevant input elements */
+      let mapTypeSelect = null; let mapTypeDescSpan = null; let channelSelect = null
 
-      t.forEach(function (value) {
+      /* Rename input/select elements with unique names */
+      textureMapDict.html_element_class_names.forEach(function (value) {
+        /* querySelector does not work outside the document */
         const e = textureNode.getElementsByClassName(value)
-        if (e.length === 0) {
-          return
-        }
+        if (e.length === 0) { return }
+
         /* Create unique name */
         e[0].name = value + '_' + textureMapCounter
 
-        if (value === 'texture_file') { e[0].value = filename };
-        if (value === 'texture_file_label') { e[0].innerHTML = shortenFilename(filename) };
-        if (value === 'texture_type') { mapTypeElem = e[0] };
-        if (value === 'texture_description') { mapTypeDescElem = e[0] };
-        if (value === 'texture_channel') { channelElem = e[0] }
+        if (value === textureMapDict.file) { e[0].value = file.name };
+        if (value === textureMapDict.file_label) { e[0].innerHTML = shortenFilename(file.name) };
+        if (value === textureMapDict.type) { mapTypeSelect = e[0] };
+        if (value === textureMapDict.type_desc) { mapTypeDescSpan = e[0] };
+        if (value === textureMapDict.channel) { channelSelect = e[0] }
       })
 
       /* Update texture type desc span on Map type <select> change event */
-      if (mapTypeElem != null && mapTypeDescElem != null && channelElem != null) {
-        mapTypeDescElem.innerHTML = textureMapDesc[0]
-        channelElem.setAttribute('disabled', 'disabled')
-        updateMapTypeDesc(mapTypeElem, mapTypeDescElem, channelElem)
+      if (mapTypeSelect != null && mapTypeDescSpan != null && channelSelect != null) {
+        mapTypeDescSpan.innerHTML = textureTypesDict[mapTypeSelect.value].desc
+        channelSelect.setAttribute('disabled', 'disabled')
+        updateMapTypeDesc(mapTypeSelect, mapTypeDescSpan, channelSelect)
       }
 
       /* Add the Texture Node input element */
@@ -191,20 +192,16 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapT
       const textureMapContainer = document.getElementById('texture-map-container')
 
       try {
-      /* Test if our const where created by the Jinja template */
+        /* Test if our const where created by the Jinja template */
         if (uploadAllowedMapExt != null) {
-          if (textureMapTypes != null) {
-            if (textureMapDesc != null) {
-              if (textureMapChannel != null) {
-                if (sceneFileInputName != null) {
-                  console.log('Tx Map constants created. Tx Maps Drag n Drop is getting ready.')
-                }
-              }
+          if (textureMapDict != null) {
+            if (sceneFileInputName != null) {
+              console.log('Tx Map constants created. Tx Maps Drag n Drop is getting ready.')
             }
           }
         }
       } catch (e) {
-        console.error('Template did not declare necessary Constants. Texture Map creation not available!', e)
+        console.error('Template did not declare necessary constants. Texture Map creation not available!', e)
         return
       }
 

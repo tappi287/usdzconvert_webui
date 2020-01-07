@@ -9,3 +9,4 @@
 /usdz_webui/static/downloads/**
 /usdz_webui/static/downloads/
 /dist/
+/build_config.py
