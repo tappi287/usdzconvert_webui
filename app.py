@@ -11,7 +11,7 @@ from modules.log import setup_logging
 from modules.settings import instance_setup
 
 
-# TODO: guess map type by file name
+# TODO: check Alembic PlugIn failed to import python module _usdAbc
 # TODO: add Alembic post-process assigning Materials per object
 # TODO: refactor backEnd > frontEnd variable exchange
 # TODO: build USD with Alembic support [Done - Windows]
