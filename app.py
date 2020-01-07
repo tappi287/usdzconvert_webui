@@ -7,6 +7,9 @@ from flask_sqlalchemy import SQLAlchemy
 from modules.globals import APP_NAME
 from modules.log import setup_logging
 
+# TODO: process Uv set input on texture map creation, one arg per material or global arg
+# TODO: detect valid Uv set name if none set by user
+# TODO: refactor backEnd > frontEnd variable exchange
 # TODO: move downloads out of static dir
 # TODO: provide install script for instance dir config
 # TODO: build USD with Alembic support [Done - Windows]
