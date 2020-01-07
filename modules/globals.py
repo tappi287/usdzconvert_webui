@@ -19,6 +19,14 @@ try:
 except Exception as e:
     print(e)
 
+default_tex_coord_set_names = {
+    '.gltf': 'TEXCOORD_0',
+    '.glb': 'TEXCOORD_0',
+    '.bin': 'TEXCOORD_0',
+    '.abc': 'uv',
+    '.obj': 'UVMap',
+}
+
 
 def get_current_modules_dir() -> str:
     """ Return path to this app modules directory """

@@ -9,17 +9,20 @@ from werkzeug.utils import secure_filename
 from app import App, db
 from modules.create_process import RunProcess
 from modules.file_mgr import FileManager
+from modules.globals import default_tex_coord_set_names
 from modules.log import setup_logger
 from modules.site import JobFormFields, Urls
 from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env
 
 _logger = setup_logger(__name__)
 
+"""
 # set up a scoped_session
 from flask_sqlalchemy import orm
 
 session_factory = orm.sessionmaker(bind=db.engine)
 Session = orm.scoped_session(session_factory)
+"""
 
 
 class ConversionJob(db.Model):
@@ -59,7 +62,8 @@ class ConversionJob(db.Model):
         self.process_messages = str()
         self.errors = str()
 
-    def create_options(self, form: ImmutableMultiDict) -> list:
+    @staticmethod
+    def create_options(form: ImmutableMultiDict) -> list:
         option_args = list()
         for option in JobFormFields.option_fields:
             value = form.get(option.id)
@@ -203,20 +207,16 @@ class JobManager:
         return False, f'Could not delete job {job_id}. Unknown error.'
 
     @staticmethod
-    def _sort_file_dict_by_args(files: dict) -> OrderedDict:
-        d = OrderedDict()
-        d['scene_file'] = files.get('scene_file')
-        d['out_file'] = files.get('out_file')
-        d['texCoord'] = 'st'
+    def get_tex_coord_default_name_from_file_type(file: Path) -> str:
+        return default_tex_coord_set_names.get(file.suffix.casefold(), 'st')
 
-        return d
-
-    @staticmethod
-    def create_job_arguments(job: ConversionJob) -> list:
+    @classmethod
+    def create_job_arguments(cls, job: ConversionJob) -> list:
         args = list()
+        scene_file_path = job.files.get('scene_file', dict()).get('file_path', Path('.'))
 
         # inputFile arg
-        args.append(job.files.get('scene_file', dict()).get('file_path', Path('.')).as_posix())
+        args.append(scene_file_path.as_posix())
         # outputFile arg
         args.append(job.files.get('out_file', dict()).get('file_path', Path('.')).as_posix())
 
@@ -229,22 +229,42 @@ class JobManager:
         if job.option_args:
             args += job.option_args
 
+        # --- Check if we have individual Uv sets per material ---
+        # usdpython 0.62 usdzconvert sets a texCoord default value of "st"
+        # which will break correct UV assignment.
+        # If the user does not choose to provide individual texCoord setting per material
+        # set a default value guessed by the file extension.
+        tex_coords = set(f.get(JobFormFields.TextureMap.uv_coord) for f in job.files.values()
+                         if f.get(JobFormFields.TextureMap.uv_coord, ''))
+        individual_tex_coords = True if len(tex_coords) > 1 else False
+        if not individual_tex_coords:
+            # Set a default value guessed by file extension
+            args.append('-texCoordSet')
+            args.append(cls.get_tex_coord_default_name_from_file_type(scene_file_path))
+
         # --- Add Material and Texture Map arguments ---
         current_material = ''
 
         # Sort file dict by material entry
         for file_id, file_entry in sorted(job.files.items(), key=lambda f: f[1].get('material', '')):
-            # Only TextureMaps from here
             # -m materialName -diffuseColor diffuseFile.png
             if not file_id.startswith(JobFormFields.TextureMap.file_storage):
                 continue
 
             file_path = Path(file_entry.get("file_path"))
             material = file_entry.get(JobFormFields.TextureMap.material)
+            tex_coord = file_entry.get(JobFormFields.TextureMap.uv_coord)
+
+            # Add material argument
             if material and material != current_material:
                 current_material = material
                 args.append(f'-m')
                 args.append(material)
+
+                # Add texCoordSet argument
+                if individual_tex_coords and tex_coord:
+                    args.append('-texCoordSet')
+                    args.append(tex_coord)
 
             # Add texture maps file arguments
             args.append(f'-{file_entry.get(JobFormFields.TextureMap.type)}')

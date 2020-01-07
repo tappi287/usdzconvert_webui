@@ -197,8 +197,12 @@ class FileManager:
         return False
 
     @staticmethod
-    def _allowed_file(filename: str) -> bool:
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in App.config.get('UPLOAD_ALLOWED_EXT')
+    def get_file_extension_from_string(filename: str) -> str:
+        return filename.rsplit('.', 1)[1].lower()
+
+    @classmethod
+    def _allowed_file(cls, filename: str) -> bool:
+        return '.' in filename and cls.get_file_extension_from_string(filename) in App.config.get('UPLOAD_ALLOWED_EXT')
 
     @staticmethod
     def _is_multi_file_scene_primary(filename: str) -> bool:
@@ -227,7 +231,7 @@ class FileManager:
         file.save(file_path.as_posix())
         return file_path
 
-    def _save_scene_file(self, files: ImmutableMultiDict) -> bool:
+    def _save_scene_files(self, files: ImmutableMultiDict) -> bool:
         scene_files = files.getlist(key=JobFormFields.scene_file_field.id)
 
         if not scene_files:
@@ -291,7 +295,7 @@ class FileManager:
             if key in option_ids:
                 continue
 
-            # Get texture num 'texture_file_1' map_key = ('texture_file', 1)
+            # Get texture num 'texture_file_1' => ['texture_file', 1]
             map_key = key.rsplit('_', 1)
             if len(map_key) < 2:
                 continue
@@ -308,6 +312,7 @@ class FileManager:
             self.files[f'texture_map_{map_num}'] = {
                 'file_path': self._save_file(file),
                 texture_ids.channel: form.get(f'{texture_ids.channel}_{map_num}', ''),
+                texture_ids.uv_coord: form.get(f'{texture_ids.uv_coord}_{map_num}', ''),
                 texture_ids.material: form.get(f'{texture_ids.material}_{map_num}', ''),
                 texture_ids.type: form.get(f'{texture_ids.type}_{map_num}', ''),
                 }
@@ -329,7 +334,7 @@ class FileManager:
         :return: bool, message
         """
         self.job_dir = self.create_job_dir()
-        if not self._save_scene_file(files):
+        if not self._save_scene_files(files):
             return False, 'Scene file not found or not supported.'
 
         msg = self._get_texture_maps(files, form)
