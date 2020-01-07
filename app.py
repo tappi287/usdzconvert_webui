@@ -1,19 +1,37 @@
 import logging
+import logging
 import threading
+from pathlib import Path
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from modules.globals import APP_NAME
+from modules.globals import APP_NAME, instance_path
 from modules.log import setup_logging
+from modules.settings import instance_setup
+
 
 # TODO: refactor backEnd > frontEnd variable exchange
-# TODO: provide install script for instance dir config
 # TODO: build USD with Alembic support [Done - Windows]
 
-App = Flask(APP_NAME, instance_relative_config=True)
+
+class AppInstanceNotSetup(Exception):
+    def __init__(self, error_msg):
+        self.error_msg = error_msg
+
+    def __str__(self):
+        return repr(self.error_msg)
+
+
+instance_dir = instance_setup()
+if not instance_dir:
+    raise AppInstanceNotSetup(f'App instance directory could not be setup. Try to re-install the application or '
+                              f'check directory permissions in your settings dir: {str(instance_path())}')
+
+
+App = Flask(APP_NAME, instance_path=instance_dir.resolve().as_posix())
 App.config.from_object('config')  # Loads the default config.py from root dir
-App.config.from_pyfile('config.py')  # Loads config.py from instance dir
+App.config.from_pyfile(Path(instance_dir / 'config.py').as_posix())  # Loads config.py from instance dir
 db = SQLAlchemy(App)
 
 from modules import views

@@ -78,6 +78,16 @@ def update_nsis_pypi_wheels(cfg: configparser.ConfigParser, pip: dict):
 class UpdateFlaskConfig:
     cfg_file = os.path.join(get_current_modules_dir(), 'config.py')
     nsi_cfg_file = os.path.join(get_current_modules_dir(), 'nsi', 'config.py')
+    instance_cfg_file = os.path.join(get_current_modules_dir(), 'instance', 'config.py')
+    nsi_instance_cfg_file = os.path.join(get_current_modules_dir(), 'nsi', 'instance_config.py')
+
+    @staticmethod
+    def delete(file: str):
+        if os.path.exists(file):
+            try:
+                os.remove(file)
+            except Exception as e:
+                print(e)
 
     @classmethod
     def update_flask_config(cls):
@@ -89,18 +99,35 @@ class UpdateFlaskConfig:
                     line = line.replace("'converter", "'../converter")
                 build_cfg_lines.append(line)
 
-        if os.path.exists(cls.nsi_cfg_file):
-            os.remove(cls.nsi_cfg_file)
+        cls.delete(cls.nsi_cfg_file)
 
         with open(cls.nsi_cfg_file, 'w') as f:
             f.writelines(build_cfg_lines)
 
-        print('Created updated dist specific Flask config: build_config.py')
+        print('Created updated dist specific Flask config:', cls.nsi_cfg_file)
+
+    @classmethod
+    def create_instance_config_template(cls):
+        instance_template_config_lines = list()
+
+        with open(cls.instance_cfg_file, 'r') as f:
+            for line in f.readlines():
+                if 'SECRET_KEY' in line:
+                    continue
+                instance_template_config_lines.append(line)
+
+        cls.delete(cls.nsi_instance_cfg_file)
+
+        with open(cls.nsi_instance_cfg_file, 'w') as f:
+            f.writelines(instance_template_config_lines)
+
+        print('Created instance config template file:', cls.nsi_instance_cfg_file)
 
     @classmethod
     def finish(cls):
-        if os.path.exists(cls.nsi_cfg_file):
-            os.remove(cls.nsi_cfg_file)
+        cls.delete(cls.nsi_cfg_file)
+        cls.delete(cls.nsi_instance_cfg_file)
+        print('Cleared temp build config files:', cls.nsi_cfg_file, cls.nsi_instance_cfg_file)
 
 
 def rem_build_dir():
@@ -174,7 +201,9 @@ def main():
     print('Written updated Nsis build configuration to:', build_cfg)
 
     # Create updated Flask config nsi/config.py
+    # Create instance config template nsi/instance_cfg.py
     UpdateFlaskConfig.update_flask_config()
+    UpdateFlaskConfig.create_instance_config_template()
 
     args = ['pynsist', build_cfg]
     p = Popen(args=args)

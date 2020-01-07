@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from modules.globals import upload_path, get_current_modules_dir, download_path
+from modules.globals import upload_path, get_current_modules_dir, download_path, instance_path
 
 UPLOAD_FOLDER = upload_path()
 DOWNLOAD_FOLDER = download_path()
 UPLOAD_ALLOWED_SCENE = {'obj', 'gltf', 'bin', 'glb', 'fbx', 'abc', 'usd', 'usda', 'usdc', 'usdz'}
 UPLOAD_ALLOWED_MAPS = {'tga', 'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_ALLOWED_EXT = UPLOAD_ALLOWED_SCENE.union(UPLOAD_ALLOWED_MAPS)
-SHARE_HOST_CONFIG_PATH = Path(get_current_modules_dir()) / 'instance' / 'host_config.cfg'
+SHARE_HOST_CONFIG_PATH = instance_path() / 'host_config.cfg'
 
 # Path relative to this config.py or absolute path
 USDZ_CONVERTER_PATH = 'converter/usdzconvert/usdzconvert'

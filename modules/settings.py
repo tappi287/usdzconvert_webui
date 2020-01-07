@@ -1,19 +1,67 @@
-import ujson
+import os
 import time
 import zlib
 from pathlib import Path
 from typing import Union, Any
 
 import jsonpickle
+import ujson
 from cryptography.fernet import Fernet
 from werkzeug.datastructures import ImmutableMultiDict
 
-from modules.globals import get_current_modules_dir
+from modules.globals import instance_path, get_current_modules_dir
 from modules.log import setup_logger
 
 _logger = setup_logger(__name__)
 
 jsonpickle.set_preferred_backend('ujson')
+
+
+def instance_setup() -> Union[None, Path]:
+    instance_location = instance_path()
+
+    if Path(instance_location / 'config.py').exists():
+        # Not a first time setup, return instance path
+        return instance_location
+
+    # --- First time run detected, setting up instance dir ---
+    first_time_instance_config = Path(get_current_modules_dir()) / 'instance_config.py'
+    if not first_time_instance_config.exists():
+        first_time_instance_config = Path(first_time_instance_config.parent.parent / 'instance_config.py')
+
+    print('Creating first time instance configuration!')
+
+    try:
+        with open(first_time_instance_config.as_posix(), 'r') as f:
+            template_config_lines = f.readlines()
+    except Exception as e:
+        _logger.fatal('Could not read instance template configuration! Try to re-install the application. %s', e)
+        return
+
+    template_config_lines.append(
+        f"SECRET_KEY = {os.urandom(16)}"
+    )
+
+    try:
+        with open(Path(instance_location / 'config.py').as_posix(), 'w') as f:
+            f.writelines(template_config_lines)
+    except Exception as e:
+        _logger.fatal('Could not create instance configuration! %s', e)
+        return
+
+    # Create Fernet key for remote host configuration encryption
+    try:
+        instance_key = instance_location / 'instance.key'
+        if not instance_key.exists():
+            with open(instance_key.as_posix(), 'wb') as f:
+                f.write(Fernet.generate_key())
+    except Exception as e:
+        _logger.warning('Could not create a local key to encrypt remote sharing host configuration! Try to '
+                        're-install the application', e)
+        # Move on with limited functionality
+
+    print('First time instance setup successful!')
+    return instance_location
 
 
 def decrypt(key: bytes, s: Union[str, bytes]) -> str:
@@ -97,7 +145,7 @@ class JsonPickleHelper:
 
 
 class JsonConfig:
-    default_key_location = Path(get_current_modules_dir()) / 'instance' / 'instance.key'
+    default_key_location = instance_path() / 'instance.key'
 
     @staticmethod
     def read_key(key_location: Union[str, Path]) -> Union[None, bytes]:
