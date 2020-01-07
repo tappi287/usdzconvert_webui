@@ -84,8 +84,10 @@ class JobFormFields:
         OptionField('loop', 'Loop', 'Set animation loop flag to 1', 'checkbox'),
         OptionField('no-loop', 'No Loop', 'Set animation loop flag to 0', 'checkbox'),
         OptionField('iOS12', 'iOS12', 'Make output file compatible with iOS 12 frameworks', 'checkbox'),
+        OptionField('outSuffix', 'Format', 'Output .usd/usda/usdc/usdz files', 'format-select'),
         OptionField('v', 'Verbose', 'Verbose output.', 'checkbox'),
         ]
+    options_by_id = {o.id: o for o in option_fields}
 
     additional_args = 'additional_args'
     additional_args_text = 'usdzconvert additional arguments'

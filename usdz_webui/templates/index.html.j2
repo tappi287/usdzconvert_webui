@@ -59,6 +59,13 @@
                             <input name="{{ option_field.id }}" type="number" step="any"  min="0" class="color-channel">
                         {% elif option_field.input_type == 'url' %}
                             <input name="{{ option_field.id }}" type="url" class="color-channel">
+                        {% elif option_field.input_type == 'format-select' %}
+                            <select name="{{ option_field.id }}" class="color-channel">
+                                <option value=".usd">.usd</option>
+                                <option value=".usda">.usda</option>
+                                <option value=".usdc">.usdc</option>
+                                <option value=".usdz">.usdz</option>
+                            </select>
                         {% endif %}
                         <br />
                     </label>

@@ -66,6 +66,10 @@ class ConversionJob(db.Model):
     def create_options(form: ImmutableMultiDict) -> list:
         option_args = list()
         for option in JobFormFields.option_fields:
+            if option.id == 'outSuffix':
+                # Not a valid usdzconvert argument, will be used to name outFile
+                continue
+
             value = form.get(option.id)
 
             if option.input_type == 'checkbox':

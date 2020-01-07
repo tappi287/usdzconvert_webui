@@ -2,7 +2,7 @@ import shutil
 import time
 from datetime import datetime
 from pathlib import Path
-from shutil import rmtree, copy
+from shutil import copy, rmtree
 from typing import Dict, Tuple, Union
 
 from flask import render_template
@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from app import App
 from modules import filesize
 from modules.ftp import FtpRemote
-from modules.globals import APP_NAME, OUT_SUFFIX, get_current_modules_dir
+from modules.globals import APP_NAME, get_current_modules_dir
 from modules.log import setup_logger
 from modules.settings import JsonConfig
 from modules.site import JobFormFields, Urls
@@ -27,6 +27,7 @@ class FileManager:
     def __init__(self):
         self.job_dir = None
         self.files = dict()
+        self.out_suffix = '.usdz'
 
     @classmethod
     def remote_share_download(cls, folder_id: str, dl: dict,
@@ -258,12 +259,12 @@ class FileManager:
         self.files[JobFormFields.scene_file_field.id] = {'file_path': file_path}
 
         # Set out file path
-        if file_path.suffix == OUT_SUFFIX:
+        if file_path.suffix == self.out_suffix:
             # |in>> one.usdz |out>> one_out.usdz
             self.files['out_file'] = {'file_path': file_path.with_name(f'{file_path.stem}_out{file_path.suffix}')}
         else:
             # |in>> one.abc |out>> one.usdz
-            self.files['out_file'] = {'file_path': file_path.with_suffix(OUT_SUFFIX)}
+            self.files['out_file'] = {'file_path': file_path.with_suffix(self.out_suffix)}
 
         return True
 
@@ -285,7 +286,7 @@ class FileManager:
     def _get_texture_maps(self, files: ImmutableMultiDict, form: ImmutableMultiDict) -> str:
         texture_ids = JobFormFields.TextureMap
         texture_files = self._create_flat_texture_files_dict(files)
-        option_ids = [o.id for o in JobFormFields.option_fields]
+        option_ids = JobFormFields.options_by_id.keys()
         msg = ''
 
         for key, value in form.items():
@@ -331,6 +332,7 @@ class FileManager:
         :return: bool, message
         """
         self.job_dir = self.create_job_dir()
+        self.out_suffix = form.get(JobFormFields.options_by_id.get('outSuffix'), self.out_suffix)
         if not self._save_scene_files(files):
             return False, 'Scene file not found or not supported.'
 
