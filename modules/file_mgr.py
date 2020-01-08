@@ -5,11 +5,10 @@ from pathlib import Path
 from shutil import copy, rmtree
 from typing import Dict, Tuple, Union
 
-from flask import render_template
+from flask import render_template, current_app
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 
-from app import App
 from modules import filesize
 from modules.ftp import FtpRemote
 from modules.globals import APP_NAME, get_current_modules_dir
@@ -21,7 +20,6 @@ _logger = setup_logger(__name__)
 
 
 class FileManager:
-    instance_download_dir = App.config.get('DOWNLOAD_FOLDER')
     static_img_dir = Path(get_current_modules_dir()) / APP_NAME / Urls.static_images
 
     def __init__(self):
@@ -33,7 +31,7 @@ class FileManager:
     def remote_share_download(cls, folder_id: str, dl: dict,
                               form: ImmutableMultiDict, files: ImmutableMultiDict) -> bool:
         # -- Get Download directory --
-        download_dir = cls.instance_download_dir / folder_id
+        download_dir = current_app.config.get('DOWNLOAD_FOLDER') / folder_id
         if not download_dir.exists():
             _logger.error('File to share not found at: %s', download_dir.as_posix())
             return False
@@ -68,19 +66,18 @@ class FileManager:
 
         # -- Create index html file --
         index_html_path = share_dir / 'index.html'
-        with App.app_context():
-            with open(index_html_path.as_posix(), 'w') as f:
-                f.write(
-                    render_template(
-                        Urls.templates.get(Urls.share_template),
-                        page_description=form.get('footer-line'),
-                        usdz_file=scene_path.name,
-                        preview_image_url=img_path.name
-                        )
+        with open(index_html_path.as_posix(), 'w') as f:
+            f.write(
+                render_template(
+                    Urls.templates.get(Urls.share_template),
+                    page_description=form.get('footer-line'),
+                    usdz_file=scene_path.name,
+                    preview_image_url=img_path.name
                     )
+                )
 
         # -- Transfer Remote Share folder --
-        conf = JsonConfig.load_config(App.config.get('SHARE_HOST_CONFIG_PATH'))
+        conf = JsonConfig.load_config(current_app.config.get('SHARE_HOST_CONFIG_PATH'))
         remote = FtpRemote(conf)
         if not remote.connect():
             return False
@@ -99,7 +96,8 @@ class FileManager:
 
     @classmethod
     def clear_upload_folders(cls, jobs) -> bool:
-        upload_dir: Path = App.config.get('UPLOAD_FOLDER')
+        upload_dir: Path = current_app.config.get('UPLOAD_FOLDER')
+        _logger.debug('CLeaning upload folder: %s', upload_dir.as_posix())
         active_job_dirs = [j.job_dir() for j in jobs if not j.completed]
 
         if active_job_dirs:
@@ -108,7 +106,7 @@ class FileManager:
         success = True
         for p in upload_dir.glob('*'):
             if p not in active_job_dirs:
-                success = False if not cls.clear_folder(p) else success
+                success = False if not cls.clear_folder(p, False) else success
 
         return success
 
@@ -119,14 +117,14 @@ class FileManager:
             try:
                 rmtree(folder)
             except Exception as e:
-                _logger.error('Error cleaning upload folder! %s', e, exc_info=1)
+                _logger.error('Error cleaning folder! %s', e, exc_info=1)
                 return False
 
         if re_create:
             try:
                 folder.mkdir(exist_ok=False)
             except FileExistsError or FileNotFoundError or PermissionError:
-                _logger.error('Error re-creating upload folder!', exc_info=1)
+                _logger.error('Error re-creating folder!', exc_info=1)
                 return False
 
         return True
@@ -137,10 +135,12 @@ class FileManager:
         Move a file to the static download dir.
         Provide a string with create_dir to create a sub directory of that name.
         """
+        _logger.info('FileMgr moving file to dl dir: %s %s', file.name, folder_id)
         if not file.is_file() or not file.exists():
             return
 
-        job_download_dir = cls.instance_download_dir / secure_filename(folder_id)
+        job_download_dir = current_app.config.get('DOWNLOAD_FOLDER') / secure_filename(folder_id)
+        _logger.info('FileMgr moving file to job dl dir: %s', str(job_download_dir))
         try:
             job_download_dir.mkdir(parents=True, exist_ok=True)
         except FileExistsError or FileNotFoundError:
@@ -165,7 +165,7 @@ class FileManager:
         download_files: Dict[str, Dict] = dict()
 
         # Iterate sub directory's
-        for folder in cls.instance_download_dir.glob('*'):
+        for folder in current_app.config.get('DOWNLOAD_FOLDER').glob('*'):
             for file in folder.glob('*.*'):
                 # Create url
                 download_url = f'{Urls.downloads}/{folder.name}/{file.name}'
@@ -187,7 +187,7 @@ class FileManager:
 
     @classmethod
     def delete_download(cls, folder_id: str) -> bool:
-        download_dir = cls.instance_download_dir / folder_id
+        download_dir = current_app.config.get('DOWNLOAD_FOLDER') / folder_id
 
         if cls.clear_folder(download_dir, re_create=False):
             return True
@@ -200,7 +200,7 @@ class FileManager:
 
     @classmethod
     def _allowed_file(cls, filename: str) -> bool:
-        return '.' in filename and cls.get_file_extension_from_string(filename) in App.config.get('UPLOAD_ALLOWED_EXT')
+        return '.' in filename and cls.get_file_extension_from_string(filename) in current_app.config.get('UPLOAD_ALLOWED_EXT')
 
     @staticmethod
     def _is_multi_file_scene_primary(filename: str) -> bool:
@@ -209,7 +209,7 @@ class FileManager:
     @staticmethod
     def create_job_dir() -> Union[Path, None]:
         name = f'up_{str(time.time()).replace(".", "")[-15:]}'
-        upload_dir = App.config.get('UPLOAD_FOLDER') or Path('.')
+        upload_dir = current_app.config.get('UPLOAD_FOLDER') or Path('.')
         job_dir = upload_dir / name
 
         try:

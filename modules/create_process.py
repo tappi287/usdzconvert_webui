@@ -58,6 +58,8 @@ class RunProcess(threading.Thread):
     def __init__(self, args, cwd: Path,
                  # optional OS enironment
                  env: dict = None,
+                 # Thread id reported with callbacks
+                 identifier: int = 0,
                  # Callbacks
                  finished_callback=None, failed_callback=None, status_callback=None):
         super(RunProcess, self).__init__()
@@ -65,6 +67,7 @@ class RunProcess(threading.Thread):
         self.args = args
         self.cwd: Path = cwd
         self.env = env or dict()
+        self.identifier = identifier
 
         # -- Prepare callbacks
         self.finished_callback = self.failed_callback = self.status_callback = self._dummy_callback
@@ -86,13 +89,16 @@ class RunProcess(threading.Thread):
     def _dummy_callback(*args, **kwargs):
         _logger.info('Dummy callback called: %s %s', args, kwargs)
 
+    def process_log_callback(self, message: str):
+        self.status_callback(self.identifier, message)
+
     def run(self):
         # Reset thread event
         self.event.clear()
 
         # Run in own thread to keep parent thread ready for abort signals
         if not self._start_process():
-            self.failed_callback('Process could not be started.')
+            self.failed_callback(self.identifier, 'Process could not be started.')
             return
 
         # Wait until process finished or aborted
@@ -101,11 +107,11 @@ class RunProcess(threading.Thread):
 
         # Process result unsuccessful
         if self.process_exitcode != 0:
-            self.failed_callback('Process returned with error code.')
+            self.failed_callback(self.identifier, 'Process returned with error code.')
             return
 
         # Exit successfully
-        self.finished_callback()
+        self.finished_callback(self.identifier)
 
     def _start_process(self):
         """ Start process and log to file and stdout """
@@ -124,7 +130,7 @@ class RunProcess(threading.Thread):
     def _process_log_loop(self):
         """ Reads and writes process stdout to log until process ends """
         with self.process.stdout:
-            log_subprocess_output(self.process.stdout, self.status_callback)
+            log_subprocess_output(self.process.stdout, self.process_log_callback)
 
         _logger.info('Process stdout stream ended. Fetching exitcode.')
         self.process_exitcode = self.process.wait()

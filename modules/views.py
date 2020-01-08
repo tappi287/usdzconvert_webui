@@ -63,13 +63,12 @@ def upload_files():
         # --- Forward to current job page ---
         flash(message)
 
-        with App.app_context():
-            job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
-            App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
+        job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
+        App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
 
-            db.session.add(job)
-            db.session.commit()
-            App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.job_id)
+        db.session.add(job)
+        db.session.commit()
+        App.logger.info('Upload succeeded for: %s\nCreated job with id: %s', str(file_mgr.files), job.job_id)
 
         JobManager.run_job_queue()
 

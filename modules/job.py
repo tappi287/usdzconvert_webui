@@ -1,5 +1,3 @@
-import os
-from collections import OrderedDict
 from pathlib import Path
 from typing import Iterator, Tuple, Union
 
@@ -35,7 +33,6 @@ class ConversionJob(db.Model):
     state = db.Column(db.Integer)
     progress = db.Column(db.Integer)
     completed = db.Column(db.Boolean)
-    is_current = db.Column(db.Boolean)
     process_messages = db.Column(db.String(1000))
     errors = db.Column(db.String(200))
 
@@ -114,7 +111,7 @@ class ConversionJob(db.Model):
     def direct_download_url(self) -> Union[None, str]:
         if self.state == self.States.failed:
             return
-            
+
         if self.out_file().exists() and self.completed:
             return f'{Urls.downloads}/' \
                    f'{secure_filename(self.job_dir().name)}/{self.out_file().name}'
@@ -132,9 +129,6 @@ class ConversionJob(db.Model):
     def set_in_progress(self):
         self.state = self.States.in_progress
         self.progress = 5
-
-    def set_current(self, is_current: bool):
-        self.is_current = is_current
 
     def set_complete(self):
         # Move Job file to static, public available, directory
@@ -179,13 +173,6 @@ class JobManager:
     @staticmethod
     def _get_next_job() -> Union[None, ConversionJob]:
         return ConversionJob.query.filter_by(completed=False).first()
-
-    @staticmethod
-    def current_job() -> ConversionJob:
-        current_job = ConversionJob.query.filter_by(is_current=True).first()
-        if current_job:
-            return current_job
-        return ConversionJob(Path(), dict(), ImmutableMultiDict())
 
     @classmethod
     def remove_job(cls, job_id: int) -> Tuple[bool, str]:
@@ -287,28 +274,29 @@ class JobManager:
             job_dir = job.job_dir()
             db.session.commit()
 
-        process_thread = RunProcess(job_arguments, job_dir, usd_env(),
-                                    cls._finished_callback, cls._failed_callback, cls._message_callback)
-        process_thread.start()
+            process_thread = RunProcess(job_arguments, job_dir, usd_env(), job.job_id,
+                                        cls._finished_callback, cls._failed_callback, cls._message_callback)
+            process_thread.start()
+            _logger.info('Started thread with id: %s', process_thread.ident)
 
     @classmethod
-    def _failed_callback(cls, error: str):
+    def _failed_callback(cls, thread_id: int, error: str):
         with App.app_context():
             _logger.info('Job processing failed: %s', error)
-            cls.current_job().set_failed(error)
+            cls.get_job_by_id(thread_id).set_failed(error)
             db.session.commit()
             cls.run_job_queue()
 
     @classmethod
-    def _finished_callback(cls):
+    def _finished_callback(cls, thread_id: int):
         with App.app_context():
             _logger.info('Job finished.')
-            cls.current_job().set_complete()
+            cls.get_job_by_id(thread_id).set_complete()
             db.session.commit()
             cls.run_job_queue()
 
     @classmethod
-    def _message_callback(cls, message):
+    def _message_callback(cls, thread_id: int, message):
         with App.app_context():
-            cls.current_job().message_update(message)
+            cls.get_job_by_id(thread_id).message_update(message)
             db.session.commit()

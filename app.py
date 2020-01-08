@@ -1,5 +1,4 @@
 import logging
-import logging
 import threading
 from pathlib import Path
 
@@ -11,13 +10,12 @@ from modules.log import setup_logging
 from modules.settings import instance_setup
 
 
-# TODO: check Alembic PlugIn failed to import python module _usdAbc
 # TODO: add Alembic post-process assigning Materials per object
 # TODO: refactor backEnd > frontEnd variable exchange
 # TODO: build USD with Alembic support [Done - Windows]
 
 
-class AppInstanceNotSetup(Exception):
+class AppInstanceDirNotSetup(Exception):
     def __init__(self, error_msg):
         self.error_msg = error_msg
 
@@ -27,13 +25,14 @@ class AppInstanceNotSetup(Exception):
 
 instance_dir = instance_setup()
 if not instance_dir:
-    raise AppInstanceNotSetup(f'App instance directory could not be setup. Try to re-install the application or '
-                              f'check directory permissions in your settings dir: {str(instance_path())}')
+    raise AppInstanceDirNotSetup(f'App instance directory could not be setup. Try to re-install the application or '
+                                 f'check directory permissions in your settings dir: {str(instance_path())}')
 
 
 App = Flask(APP_NAME, instance_path=instance_dir.resolve().as_posix())
 App.config.from_object('config')  # Loads the default config.py from root dir
 App.config.from_pyfile(Path(instance_dir / 'config.py').as_posix())  # Loads config.py from instance dir
+
 db = SQLAlchemy(App)
 
 from modules import views
