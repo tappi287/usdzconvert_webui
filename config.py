@@ -11,6 +11,7 @@ SHARE_HOST_CONFIG_PATH = instance_path() / 'host_config.cfg'
 
 # Path relative to this config.py or absolute path
 USDZ_CONVERTER_PATH = 'converter/usdzconvert/usdzconvert'
+ABC_POST_PROCESSOR_PATH = 'proc/post_process_abc.py'
 USDZ_CONVERTER_USD_BIN_PATH = 'converter/USD'
 USDZ_CONVERTER_INTERPRETER = 'converter/USD/deps/python/python.exe'
 SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/app.sqlite3'

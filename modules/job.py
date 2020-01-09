@@ -10,7 +10,7 @@ from modules.file_mgr import FileManager
 from modules.globals import default_tex_coord_set_names
 from modules.log import setup_logger
 from modules.site import JobFormFields, Urls
-from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env
+from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env, create_abc_post_process_arguments
 
 _logger = setup_logger(__name__)
 
@@ -146,16 +146,12 @@ class ConversionJob(db.Model):
         self.completed = True
         self.progress = 100
 
-        self.set_current(False)
-
     def set_failed(self, error_msg: str = ''):
         self.state = self.States.failed
         self.completed = True
         if error_msg:
             self.set_error(error_msg)
         self.progress = 0
-
-        self.set_current(False)
 
 
 class JobManager:
@@ -198,7 +194,7 @@ class JobManager:
     @classmethod
     def create_job_arguments(cls, job: ConversionJob) -> list:
         args = list()
-        scene_file_path = job.files.get('scene_file', dict()).get('file_path', Path('.'))
+        scene_file_path = job.files.get(JobFormFields.scene_file_field.id, dict()).get('file_path', Path('.'))
 
         # inputFile arg
         args.append(scene_file_path.as_posix())
@@ -268,16 +264,42 @@ class JobManager:
             job = cls._get_next_job()
             if not job:
                 return
-            job.set_current(True)
             job.set_in_progress()
             job_arguments = create_usdzconvert_arguments(cls.create_job_arguments(job))
-            job_dir = job.job_dir()
-            db.session.commit()
 
-            process_thread = RunProcess(job_arguments, job_dir, usd_env(), job.job_id,
+            process_thread = RunProcess(job_arguments, job.job_dir(), usd_env(), job.job_id,
                                         cls._finished_callback, cls._failed_callback, cls._message_callback)
-            process_thread.start()
-            _logger.info('Started thread with id: %s', process_thread.ident)
+            db.session.commit()
+        process_thread.start()
+        _logger.info('Started thread with id: %s', process_thread.ident)
+
+    @classmethod
+    def _run_post_process(cls, job: ConversionJob) -> bool:
+        """ In app context
+
+            Decide if we need to post process an alembic input file
+         """
+        if job.files[JobFormFields.scene_file_field.id].get('file_path', Path()).suffix != '.abc':
+            return False
+        if job.out_file().suffix != '.usdc':
+            return False
+
+        job.progress = 75
+        job.message_update('USDZ Conversion Server is post processing your Alembic input file.')
+
+        # --- Start Alembic post process ---
+        args = create_abc_post_process_arguments()
+        args.append(job.out_file())
+
+        post_process_thread = RunProcess(args, job.job_dir(), usd_env(), job.job_id,
+                                         cls._finished_callback, cls._failed_callback, cls._message_callback)
+        post_process_thread.start()
+        _logger.info('Started post processing thread with id: %s', post_process_thread.ident)
+
+        # Post process will create a usdz
+        job.set_out_file(job.out_file().with_suffix('.usdz'))
+        db.session.commit()
+        return True
 
     @classmethod
     def _failed_callback(cls, thread_id: int, error: str):
@@ -290,6 +312,11 @@ class JobManager:
     @classmethod
     def _finished_callback(cls, thread_id: int):
         with App.app_context():
+            job = cls.get_job_by_id(thread_id)
+
+            if cls._run_post_process(job):
+                return
+
             _logger.info('Job finished.')
             cls.get_job_by_id(thread_id).set_complete()
             db.session.commit()

@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from typing import Union
 
 from app import App
 from modules.globals import get_current_modules_dir
@@ -106,23 +107,36 @@ def usd_env() -> dict:
     return _create_usd_env(config_path)
 
 
-def create_usdzconvert_arguments(args: list) -> list:
-    """ Create arguments and environment to run usdzconvert with configured local python 2.7 interpreter """
-    usdz_converter_path = Path(App.config.get('USDZ_CONVERTER_PATH'))
+def _get_converter_interpreter_arg() -> Union[Path, str]:
     win_interpreter_path = Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
-
-    if not usdz_converter_path.is_absolute():
-        usdz_converter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_PATH'))
     if not win_interpreter_path.is_absolute():
         win_interpreter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
 
     # Changed to Path.resolve() to resolve eg. dir1/dir2/../dir3 -> dir1/dir3
     if sys.platform == 'win32':
         # python.exe usdzconvert
-        arguments = [win_interpreter_path.resolve(), usdz_converter_path.resolve()]
+        return win_interpreter_path.resolve()
     else:
         # python usdzconvert
-        arguments = ['python', usdz_converter_path.resolve()]
+        return 'python'
+
+
+def create_abc_post_process_arguments() -> list:
+    abc_post_process_path = Path(App.config.get('ABC_POST_PROCESSOR_PATH'))
+    if not abc_post_process_path.is_absolute():
+        abc_post_process_path = Path(get_current_modules_dir()) / Path(App.config.get('ABC_POST_PROCESSOR_PATH'))
+
+    return [_get_converter_interpreter_arg(), abc_post_process_path]
+
+
+def create_usdzconvert_arguments(args: list) -> list:
+    """ Create arguments and environment to run usdzconvert with configured local python 2.7 interpreter """
+    usdz_converter_path = Path(App.config.get('USDZ_CONVERTER_PATH'))
+
+    if not usdz_converter_path.is_absolute():
+        usdz_converter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_PATH'))
+
+    arguments = [_get_converter_interpreter_arg(), usdz_converter_path.resolve()]
 
     for arg in args:
         arguments.append(arg)

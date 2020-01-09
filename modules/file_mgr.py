@@ -258,6 +258,13 @@ class FileManager:
         # Update files dict
         self.files[JobFormFields.scene_file_field.id] = {'file_path': file_path}
 
+        # Alembic files need to be post-processed due to "missing" material assignments
+        # intended by the nature of the format. We will assign to matching material/mesh names instead.
+        #
+        # The combination of .abc in suffix and .usdc out suffix will trigger the post-process
+        if file_path.suffix == '.abc':
+            self.out_suffix = '.usdc'
+
         # Set out file path
         if file_path.suffix == self.out_suffix:
             # |in>> one.usdz |out>> one_out.usdz
