@@ -11,6 +11,8 @@ from modules.settings import instance_setup
 
 
 # TODO: add Alembic post-process assigning Materials per object
+# TODO: -> change to pre-process assigning dummy materials, also leaves uv assignment for usdzconvert
+# TODO: -> post process would work for any file format, hmmm
 # TODO: refactor backEnd > frontEnd variable exchange
 # TODO: build USD with Alembic support [Done - Windows]
 
