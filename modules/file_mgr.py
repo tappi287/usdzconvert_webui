@@ -158,6 +158,30 @@ class FileManager:
         return new_file_path
 
     @classmethod
+    def backup_texture_maps(cls, job_files: dict, restore: bool = False):
+        for file_id, file_entry in job_files.items():
+            if not file_id.startswith(JobFormFields.TextureMap.file_storage):
+                continue
+
+            tex_file: Path = file_entry.get('file_path', Path('./n'))
+            backup_path = tex_file.parent / 'texBackUp' / tex_file.name
+
+            in_file = backup_path if restore else tex_file
+            out_file = tex_file if restore else backup_path
+
+            if in_file.exists():
+                _logger.debug('Started backup/restore for: %s', in_file)
+                try:
+                    out_file.parent.mkdir(exist_ok=True)
+                    if restore:
+                        out_file.unlink()
+                    shutil.copy(in_file.as_posix(), out_file.as_posix())
+                except Exception as e:
+                    _logger.error(e)
+            else:
+                _logger.debug('Skipping backup of non existing file: %s', in_file)
+
+    @classmethod
     def list_downloads(cls) -> Dict[str, Dict]:
         """ Return contents of download directory:
             Dict[folder_name(unique)] = Tuple[download_url, file_name, file_size]
@@ -226,6 +250,12 @@ class FileManager:
             return
 
         file_path = self.job_dir / secure_filename(file.filename)
+
+        # File already saved
+        if file_path.exists():
+            return file_path
+
+        # Save file
         file.save(file_path.as_posix())
         return file_path
 
@@ -267,10 +297,12 @@ class FileManager:
 
         # Set out file path
         if file_path.suffix == self.out_suffix:
-            # |in>> one.usdz |out>> one_out.usdz
-            self.files['out_file'] = {'file_path': file_path.with_name(f'{file_path.stem}_out{self.out_suffix}')}
+            # |in>> one.usdz |out>> out_dir/one_out.usdz
+            file_path = file_path.parent / f'{file_path.stem}_out{self.out_suffix}'
+            self.files['out_file'] = {'file_path': file_path}
         else:
-            # |in>> one.abc |out>> one.usdz
+            # |in>> one.abc |out>> out_dir/one.usdz
+            file_path = file_path.parent / f'{file_path.stem}{self.out_suffix}'
             self.files['out_file'] = {'file_path': file_path.with_suffix(self.out_suffix)}
 
         return True
@@ -314,7 +346,7 @@ class FileManager:
                 _logger.error('No texture file found for %s!', key)
                 continue
 
-            self.files[f'texture_map_{map_num}'] = {
+            self.files[f'{JobFormFields.TextureMap.file_storage}_{map_num}'] = {
                 'file_path': self._save_file(file),
                 texture_ids.channel: form.get(f'{texture_ids.channel}_{map_num}', ''),
                 texture_ids.uv_coord: form.get(f'{texture_ids.uv_coord}_{map_num}', ''),

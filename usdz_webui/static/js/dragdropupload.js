@@ -28,7 +28,7 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
     if (filename.match(/.*(occlusion)|(ao)/i)) { return 'occlusion' }
     if (filename.match(/.*(opacity)|(alpha)/i)) { return 'opacity' }
     if (filename.match(/.*(clearcoat)|(coat)/i)) { return 'clearcoat' }
-    if (filename.match(/.*(metallic)|(metalness)/i)) { return 'clearcoatRoughness' }
+    if (filename.match(/.*(clearcoatrough)|(clearcoatroughness)/i)) { return 'clearcoatRoughness' }
     return 'diffuseColor'
   }
 

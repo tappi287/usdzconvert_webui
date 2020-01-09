@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Iterator, Tuple, Union
 
@@ -39,10 +40,11 @@ class ConversionJob(db.Model):
     class States:
         queued = 0
         in_progress = 1
-        finished = 2
-        failed = 3
+        post_processed = 2
+        finished = 3
+        failed = 4
 
-    state_names = {States.queued: 'Queued', States.in_progress: 'In progress',
+    state_names = {States.queued: 'Queued', States.in_progress: 'In progress', States.post_processed: 'post processing',
                    States.finished: 'finished', States.failed: 'failed'}
 
     def __init__(self, job_dir: Path, files: dict, form: ImmutableMultiDict):
@@ -275,11 +277,10 @@ class JobManager:
 
     @classmethod
     def _run_post_process(cls, job: ConversionJob) -> bool:
-        """ In app context
+        """Decide if we need to post process an alembic input file """
+        scene_file: Path = job.files[JobFormFields.scene_file_field.id].get('file_path', Path('.'))
 
-            Decide if we need to post process an alembic input file
-         """
-        if job.files[JobFormFields.scene_file_field.id].get('file_path', Path()).suffix != '.abc':
+        if scene_file.suffix != '.abc':
             return False
         if job.out_file().suffix != '.usdc':
             return False
@@ -297,7 +298,9 @@ class JobManager:
         _logger.info('Started post processing thread with id: %s', post_process_thread.ident)
 
         # Post process will create a usdz
+        job.files[JobFormFields.scene_file_field.id]['file_path'] = scene_file.parent / f'{scene_file.stem}_out.usdc'
         job.set_out_file(job.out_file().with_suffix('.usdz'))
+        job.state = ConversionJob.States.post_processed
         db.session.commit()
         return True
 
@@ -317,10 +320,10 @@ class JobManager:
             if cls._run_post_process(job):
                 return
 
-            _logger.info('Job finished.')
-            cls.get_job_by_id(thread_id).set_complete()
+            _logger.info('Job processing finished.')
+            job.set_complete()
             db.session.commit()
-            cls.run_job_queue()
+        cls.run_job_queue()
 
     @classmethod
     def _message_callback(cls, thread_id: int, message):
