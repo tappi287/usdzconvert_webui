@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import sys
+import re
 import logging
 import subprocess
 import argparse
@@ -15,22 +16,12 @@ except ImportError:
     print('Failed to import Usd modules. Add USD_INSTALL/lib/python to PYTHONPATH')
     sys.exit(3)
 
-logging.basicConfig(stream=sys.stdout, format='%(asctime)s %(name)s %(levelname)s: %(message)s',
-                    datefmt='%d.%m.%Y %H:%M', level=logging.INFO)
+# -- Log to Stdout keeping it short
+logging.basicConfig(stream=sys.stdout, format='%(asctime)s %(levelname)s: %(message)s',
+                    datefmt='%H:%M', level=logging.INFO)
 
 
 def connect_material_inputs_to_uv_set(material):
-    """
-material_prim = usdviewApi.prim
-from pxr import Sdr, UsdShade
-material = UsdShade.Material(material_prim)
-uv_input = UsdShade.ConnectableAPI(material.GetPrim()).GetInput('varname')
-    :param UsdShade.Maetrial material:
-    :return:
-    """
-    surface = material.GetSurfaceOutput()
-    # uv_input = UsdShade.ConnectableAPI(material.GetPrim()).GetInput('varname')
-    # uv_input = usdMaterial.CreateInput('frame:stPrimvarName', Sdf.ValueTypeNames.Token)
     uv_input = material.GetPrim().GetAttribute('inputs:frame:stPrimvarName')
     if not uv_input:
         uv_input = material.CreateInput('frame:stPrimvarName', Sdf.ValueTypeNames.Token)
@@ -51,8 +42,9 @@ def assign_materials_by_mesh_name(in_file, tmp_usdc):
     mesh_prims = dict()
     material_prims = dict()
 
-    # Iterate stage and get materials and mesh prims with lowercase names
+    # -- Iterate stage and get materials and mesh prim names
     for prim in stage.Traverse(predicate):
+        # -- Iterate Meshes --
         if prim.GetTypeName() == "Mesh":
             # Skip meshes that are already bound to a material
             bound_material, binding_rel = UsdShade.MaterialBindingAPI(prim).ComputeBoundMaterial(UsdShade.Tokens.full)
@@ -62,33 +54,40 @@ def assign_materials_by_mesh_name(in_file, tmp_usdc):
                 continue
 
             # Store ref to mesh without a material bound
-            mesh_prims[prim.GetName().lower()] = prim
-
+            mesh_prims[prim.GetName()] = prim
+        # -- Iterate Materials --
         elif prim.GetTypeName() == "Material":
             # Store ref to a scene material
-            material_prims[prim.GetName().lower()] = prim
+            material_prims[prim.GetName()] = prim
 
-    # Compare mesh names with material names
+    # -- Compare mesh names with material names
     for mesh_name, prim in mesh_prims.items():
-        mesh_name = mesh_name.lower()
+        material = None
+        regex = ".*({})".format(mesh_name)
 
-        if mesh_name in material_prims:
-            # Construct a Material from the material prim
-            material = UsdShade.Material(material_prims[mesh_name])
+        # Match a material by name
+        for material_name in material_prims.keys():
+            if re.match(regex, material_name, re.IGNORECASE):
+                # Construct a Material from the matched material prim
+                material = UsdShade.Material(material_prims[material_name])
+                break
 
-            try:
-                # Bind the UsdShadeMaterial to the mesh prim
-                assign_result = UsdShade.MaterialBindingAPI(prim).Bind(material)
-            except Exception as e:
-                assign_result = False
-                logging.error('Could not bind %s to material: %s', mesh_name, e)
-
-            if assign_result:
-                connect_material_inputs_to_uv_set(material)
-                logging.info('Bound mesh to material by name: %s', mesh_name)
-        else:
+        if not material:
             logging.warning('No material matching name of mesh: "%s" it will appear unshaded!', mesh_name)
+            continue
 
+        try:
+            # Bind the UsdShadeMaterial to the mesh prim
+            assign_result = UsdShade.MaterialBindingAPI(prim).Bind(material)
+        except Exception as e:
+            assign_result = False
+            logging.error('Could not bind %s to material: %s', mesh_name, e)
+
+        if assign_result:
+            connect_material_inputs_to_uv_set(material)
+            logging.info('Bound mesh to material by name: %s', mesh_name)
+
+    # -- Export result as usdc
     try:
         stage.GetRootLayer().Export(tmp_usdc)
         del stage
@@ -106,32 +105,43 @@ def get_usdzip_bin_path():
 
 
 def main(in_file):
+    # -- Find usdzip
     usdzip_script = get_usdzip_bin_path()
     if not usdzip_script:
-        logging.fatal('Pixar usdzip script could not be found. Did you put usd/bin on your PATH?')
+        logging.fatal('Pixar usdzip script could not be found. Did you put USD_INSTALL/bin on your PATH?')
         sys.exit(3)
 
+    # -- Detangle file names
     folder = os.path.dirname(in_file)
-    file_name, file_ext = os.path.splitext(os.path.basename(in_file))
-    tmp_usdc = os.path.join(folder, file_name + '_out' + file_ext)
+    file_name, _ = os.path.splitext(os.path.basename(in_file))
+    tmp_usdc = os.path.join(folder, file_name + '_processed' + '.usdc')
     out_usdz = os.path.join(folder, file_name + '.usdz')
 
+    # -- Process input file assigning materials to matching mesh names
     logging.info('Started Alembic post processing.')
     result = assign_materials_by_mesh_name(in_file, tmp_usdc)
 
     if not result:
         sys.exit(2)
 
+    # -- Run usdzip and create a package from processed usdc
+    logging.info('Creating usdzip packaging subprocess')
     usdzip_args = [sys.executable, usdzip_script, out_usdz, '--arkitAsset', tmp_usdc]
     p = subprocess.Popen(usdzip_args, env=os.environ)
-    out, error = p.communicate()
-    logging.debug(out)
-    logging.error(error)
 
+    out, error = p.communicate()
+
+    if out:
+        logging.debug(out)
+    if error:
+        logging.error(error)
+
+    # -- Check usdzip results
     if p.returncode and p.returncode != 0:
         logging.error('Error while creating USDZ package with usdzip')
         sys.exit(4)
     else:
+        logging.info('usdzip returned: %s [0=happy]', p.returncode)
         try:
             os.remove(in_file)
             os.remove(tmp_usdc)

@@ -189,7 +189,9 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
       if (mapTypeSelect != null && mapTypeDescSpan != null && channelSelect != null) {
         mapTypeSelect.value = guessMapTypeByFileName(file.name)
         mapTypeDescSpan.innerHTML = textureTypesDict[mapTypeSelect.value].desc
-        channelSelect.setAttribute('disabled', 'disabled')
+        if (!textureTypesDict[mapTypeSelect.value].channel_available) {
+          channelSelect.setAttribute('disabled', 'disabled')
+        }
         updateMapTypeDesc(mapTypeSelect, mapTypeDescSpan, channelSelect)
       }
 

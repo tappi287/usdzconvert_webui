@@ -15,6 +15,52 @@
 {% block content %}
     <div class="montform">
         <div class="file">
+            <h4>Converting Alembic files</h4>
+            <p>
+            Alembic files will trigger post processing by the server. Most Alembic exporters, by the nature of the format, do
+            not store material information.
+            If and only if you specify image texture maps and specify a material name for 
+            them, the server will assign those materials to mesh objects with a matching material name. Also see examples below.
+            </p>
+            <p>If your scene has only one material, leave the material name blank. A defaultMaterial will be created and assigned to everything.</p>
+            <p>
+            If not otherwise specified inside the texture map fields, 
+            the Alembic specific default texture coordinates name will be added as a usdzconvert argument.
+            The usdzconvert texture coordinate default setting of "st" would not connect the appropriate Uv set.
+            </p>
+            <p>Note that activating the iOS12 compatibility option will most likley recenter the origin axis of mesh objects
+            and add funny twists to your animation.</p>
+            <span class="description">The material name needs to be completely contained inside the mesh name. Case insensitive.<br />
+            Example: [mesh_name] > [material_name]; fancyMESHmymaterialname123 > MyMaterialName;
+            ABCdefMyMaterialNameMeshUSD > mesh_name</span>
+        </div>
+        <div class="file">
+            <h4>Converting glTF binaries</h4>
+            <p>
+            glTF binaries are very well supported by usdzconvert. Buuut since roughness, occlusion and metalness information is stored in different
+            image channels of a single image texture map... things will most likely go wrong. You can try to avoid that by enabling
+            the iOS12 option which will re-create a single image texture map with Pillow for roughness, occlusion and metalness information.
+            </p>
+            <span class="description">Options > [X] iOS12</span>
+        </div>
+        <div class="file">
+            <h4>Converting Wavefront OBJ</h4>
+            <p>
+            This file format is supported but not extensivly tested.
+            </p>
+            <p>
+            If not otherwise specified inside the texture map fields, 
+            the OBJ specific default texture coordinates name will be added as a usdzconvert argument.
+            The usdzconvert texture coordinate default setting of "st" would not connect the appropriate Uv set.
+            </p>
+        </div>
+        <div class="file">
+            <h4>Converting FBX</h4>
+            <p>
+            This proprietary file format is not currently supported. It would require the FBX Python SDK and bloat the server install even further.
+            </p>
+        </div>
+        <div class="file">
             <pre>{{ usd_manual|e }}</pre>
         </div>
     </div>

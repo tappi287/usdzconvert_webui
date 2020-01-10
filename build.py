@@ -1,5 +1,5 @@
 """
-Dependency Graph v0.9.0
+Dependency Graph v0.9.1
 
 appdirs==1.4.3
 Flask-SQLAlchemy==2.4.1
@@ -34,7 +34,7 @@ import os
 import shutil
 from subprocess import Popen
 
-from modules.globals import get_current_modules_dir
+from modules.globals import get_current_modules_dir, VERSION
 
 # Nsis Config file to read wheels from
 # needs to be manually updated if new packages required!
@@ -193,7 +193,10 @@ def main():
     with open(pip_lock_file, 'r') as f:
         pip = json.load(f)
 
+    # Update wheel versions
     update_nsis_pypi_wheels(cfg, pip)
+    # Update version
+    cfg['Application']['version'] = VERSION
 
     with open(build_cfg, 'w') as f:
         cfg.write(f)
