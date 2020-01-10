@@ -68,6 +68,7 @@ def _create_usd_env(base_dir: Path) -> dict:
     # Create a copy of the actual os environment
     env = dict()
     env.update(os.environ)
+    env['PATH'] = str()  # TODO: verify this works on Unix/add var/python2, DCC polluted Windows systems need this
 
     if not _base.exists():
         _logger.error('Could not locate USD binaries base directory.')
