@@ -17,10 +17,10 @@ _logger = setup_logger(__name__)
 jsonpickle.set_preferred_backend('ujson')
 
 
-def instance_setup() -> Union[None, Path]:
+def instance_setup(force_recreate: bool=False) -> Union[None, Path]:
     instance_location = instance_path()
 
-    if Path(instance_location / 'config.py').exists():
+    if Path(instance_location / 'config.py').exists() and not force_recreate:
         # Not a first time setup, return instance path
         return instance_location
 
@@ -29,10 +29,10 @@ def instance_setup() -> Union[None, Path]:
     if not first_time_instance_config.exists():
         first_time_instance_config = Path(first_time_instance_config.parent.parent / 'instance_config.py')
 
-    print('Creating first time instance configuration!')
+    _logger.info('Creating first time instance configuration!')
 
     try:
-        with open(first_time_instance_config.as_posix(), 'r') as f:
+        with open(first_time_instance_config.as_posix(), newline='\r\n', mode='r') as f:
             template_config_lines = f.readlines()
     except Exception as e:
         _logger.fatal('Could not read instance template configuration! Try to re-install the application. %s', e)
@@ -43,7 +43,7 @@ def instance_setup() -> Union[None, Path]:
     )
 
     try:
-        with open(Path(instance_location / 'config.py').as_posix(), 'w') as f:
+        with open(Path(instance_location / 'config.py').as_posix(), newline='\r\n', mode='w') as f:
             f.writelines(template_config_lines)
     except Exception as e:
         _logger.fatal('Could not create instance configuration! %s', e)
@@ -56,9 +56,8 @@ def instance_setup() -> Union[None, Path]:
             with open(instance_key.as_posix(), 'wb') as f:
                 f.write(Fernet.generate_key())
     except Exception as e:
-        _logger.warning('Could not create a local key to encrypt remote sharing host configuration! Try to '
-                        're-install the application', e)
         # Move on with limited functionality
+        _logger.warning('Could not create a local key to encrypt remote sharing host configuration! Try to re-install the application\n%s', e)
 
     print('First time instance setup successful!')
     return instance_location

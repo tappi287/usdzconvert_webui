@@ -6,7 +6,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ content.title }} - {% block title %}{% endblock %}</title>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='img/USD_Logo.png', version='1') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='ico/apple-touch-icon.png', version='1') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='ico/favicon-32x32.png', version='1') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='ico/favicon-16x16.png', version='1') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='ico/site.webmanifest', version='1') }}">
+    <link rel="mask-icon" href="{{ url_for('static', filename='ico/safari-pinned-tab.svg', version='1') }}" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
     <link href="https://fonts.googleapis.com/css?family=Lato|Montserrat|Inconsolata&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
