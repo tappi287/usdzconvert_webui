@@ -1,3 +1,4 @@
+import sys
 import logging
 import threading
 from pathlib import Path
@@ -21,8 +22,11 @@ class AppInstanceDirNotSetup(Exception):
     def __str__(self):
         return repr(self.error_msg)
 
+if '-r' in sys.argv or '--re-create-instance' in sys.argv:
+    instance_dir = instance_setup(force_recreate=True)
+else:
+    instance_dir = instance_setup()
 
-instance_dir = instance_setup()
 if not instance_dir:
     raise AppInstanceDirNotSetup(f'App instance directory could not be setup. Try to re-install the application or '
                                  f'check directory permissions in your settings dir: {str(instance_path())}')

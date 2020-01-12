@@ -68,7 +68,8 @@ def _create_usd_env(base_dir: Path) -> dict:
     # Create a copy of the actual os environment
     env = dict()
     env.update(os.environ)
-    env['PATH'] = str()  # TODO: verify this works on Unix/add var/python2, DCC polluted Windows systems need this
+    if sys.platform == 'win32':
+        env['PATH'] = str()  # This will not work on Unix, it would no longer find the python executable
 
     if not _base.exists():
         _logger.error('Could not locate USD binaries base directory.')
@@ -118,8 +119,8 @@ def _get_converter_interpreter_arg() -> Union[Path, str]:
         # python.exe usdzconvert
         return win_interpreter_path.resolve()
     else:
-        # python usdzconvert
-        return 'python'
+        # python2.7 usdzconvert
+        return 'python2.7'
 
 
 def create_abc_post_process_arguments() -> list:
@@ -137,7 +138,7 @@ def create_usdzconvert_arguments(args: list) -> list:
     if not usdz_converter_path.is_absolute():
         usdz_converter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_PATH'))
 
-    arguments = [_get_converter_interpreter_arg(), usdz_converter_path.resolve()]
+    arguments = [_get_converter_interpreter_arg(), usdz_converter_path.resolve().as_posix()]
 
     for arg in args:
         arguments.append(arg)

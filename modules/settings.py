@@ -32,19 +32,20 @@ def instance_setup(force_recreate: bool=False) -> Union[None, Path]:
     _logger.info('Creating first time instance configuration!')
 
     try:
-        with open(first_time_instance_config.as_posix(), newline='\r\n', mode='r') as f:
+        with open(first_time_instance_config.as_posix(), newline='\n', mode='r') as f:
             template_config_lines = f.readlines()
     except Exception as e:
         _logger.fatal('Could not read instance template configuration! Try to re-install the application. %s', e)
         return
 
     template_config_lines.append(
-        f"SECRET_KEY = {os.urandom(16)}"
+        f"\nSECRET_KEY = {os.urandom(16)}"
     )
 
     try:
-        with open(Path(instance_location / 'config.py').as_posix(), newline='\r\n', mode='w') as f:
+        with open(Path(instance_location / 'config.py').as_posix(), newline='\n', mode='w') as f:
             f.writelines(template_config_lines)
+        _logger.debug('Instance config written to:', Path(instance_location / 'config.py').as_posix())
     except Exception as e:
         _logger.fatal('Could not create instance configuration! %s', e)
         return
