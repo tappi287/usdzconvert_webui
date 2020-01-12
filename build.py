@@ -78,7 +78,7 @@ def update_nsis_pypi_wheels(cfg: configparser.ConfigParser, pip: dict):
 class UpdateFlaskConfig:
     cfg_file = os.path.join(get_current_modules_dir(), 'config.py')
     nsi_cfg_file = os.path.join(get_current_modules_dir(), 'nsi', 'config.py')
-    instance_cfg_file = os.path.join(get_current_modules_dir(), 'instance', 'config.py')
+    instance_cfg_file = os.path.join(get_current_modules_dir(), 'instance_config.py')
     nsi_instance_cfg_file = os.path.join(get_current_modules_dir(), 'nsi', 'instance_config.py')
 
     @staticmethod
