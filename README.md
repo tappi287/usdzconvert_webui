@@ -41,9 +41,9 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://github.com/tappi287/usdzconvert_webui)
-
+<p align="center">
+    <img src="usdz_webui/static/img/screenshot.png" alt="Logo" width="600">
+</p>
 Web service aiming to provide a GUI across a local network for converting 3d content to usd/usdc/usda/usdz formats. The application adds useful defaults and some server side scene post processing to help you get to the desired output.
 
 Useful if you just need a local usdz converter and do not want to share your assets with some cloud service or built USD from scratch.
@@ -130,4 +130,4 @@ This is an incomplete list of awesome free software used to create this app.
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [license-url]: https://github.com/tappi287/usdzconvert_webui/blob/master/LICENSE
-[product-screenshot]: usdz_webui/static/img/screenshot.png
+[product-screenshot]: https://github.com/tappi287/usdzconvert_webui/blob/master/usdz_webui/static/img/screenshot.jpg
