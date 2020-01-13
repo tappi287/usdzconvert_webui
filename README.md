@@ -42,7 +42,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 <p align="center">
-    <img src="usdz_webui/static/img/screenshot.png" alt="Logo" width="600">
+    <img src="usdz_webui/static/img/screenshot.jpg" alt="Logo" width="600">
 </p>
 Web service aiming to provide a GUI across a local network for converting 3d content to usd/usdc/usda/usdz formats. The application adds useful defaults and some server side scene post processing to help you get to the desired output.
 
