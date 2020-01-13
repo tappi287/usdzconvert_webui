@@ -20,7 +20,7 @@ NORMAL_PRIORITY_CLASS = 0x00000020
 REALTIME_PRIORITY_CLASS = 0x00000100
 
 
-def _create_process(arguments: Union[str, Iterable], current_working_directory: Path, env=None):
+def create_piped_process(arguments: Union[str, Iterable], current_working_directory: Path, env=None):
     _logger.debug('Running command line with arguments:\n%s\nIn cwd: %s', arguments, current_working_directory)
 
     my_env = dict()
@@ -116,7 +116,7 @@ class RunProcess(threading.Thread):
     def _start_process(self):
         """ Start process and log to file and stdout """
         try:
-            self.process = _create_process(self.args, self.cwd, self.env)
+            self.process = create_piped_process(self.args, self.cwd, self.env)
             _logger.info('Process started.')
         except Exception as e:
             _logger.error(e, exc_info=1)

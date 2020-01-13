@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from typing import Union
 
-from app import App
+from flask import current_app
 from modules.globals import get_current_modules_dir
 from modules.log import setup_logger
 
@@ -25,7 +25,7 @@ def _create_usd_env(base_dir: Path) -> dict:
     """
         Return an OS environment pointing USD Python scripts to their USD dependencies
 
-            Original Apple USDPython Tools tree:
+            Original current_apple USDPython Tools tree:
                 /usdzconvert
                 /USD/lib/           [pre-build macOS dependencies]
             Nvidia USD binaries specific tree:
@@ -97,22 +97,18 @@ def _create_usd_env(base_dir: Path) -> dict:
 
 
 def usd_env() -> dict:
-    config_path = Path(App.config.get('USDZ_CONVERTER_USD_BIN_PATH'))
+    config_path = current_app.config.get('USDZ_CONVERTER_PATH') / current_app.config.get('USDZ_CONVERTER_USD_PATH')
 
     if not config_path:
         _logger.fatal('Could not locate USD base directory from configuration!')
         return dict()
 
-    if not config_path.is_absolute():
-        config_path = Path(get_current_modules_dir()) / config_path
-
-    return _create_usd_env(config_path)
+    return _create_usd_env(config_path.absolute())
 
 
 def _get_converter_interpreter_arg() -> Union[Path, str]:
-    win_interpreter_path = Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
-    if not win_interpreter_path.is_absolute():
-        win_interpreter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_INTERPRETER'))
+    win_interpreter_path = current_app.config.get('USDZ_CONVERTER_PATH') /\
+                           current_app.config.get('USDZ_CONVERTER_INTERPRETER')
 
     # Changed to Path.resolve() to resolve eg. dir1/dir2/../dir3 -> dir1/dir3
     if sys.platform == 'win32':
@@ -124,21 +120,21 @@ def _get_converter_interpreter_arg() -> Union[Path, str]:
 
 
 def create_abc_post_process_arguments() -> list:
-    abc_post_process_path = Path(App.config.get('ABC_POST_PROCESSOR_PATH'))
+    abc_post_process_path = Path(current_app.config.get('ABC_POST_PROCESSOR_SCRIPT_PATH'))
     if not abc_post_process_path.is_absolute():
-        abc_post_process_path = Path(get_current_modules_dir()) / Path(App.config.get('ABC_POST_PROCESSOR_PATH'))
+        abc_post_process_path = Path(get_current_modules_dir()) / \
+                                current_app.config.get('ABC_POST_PROCESSOR_SCRIPT_PATH')
 
     return [_get_converter_interpreter_arg(), abc_post_process_path]
 
 
 def create_usdzconvert_arguments(args: list) -> list:
     """ Create arguments and environment to run usdzconvert with configured local python 2.7 interpreter """
-    usdz_converter_path = Path(App.config.get('USDZ_CONVERTER_PATH'))
+    usdz_converter_path = current_app.config.get('USDZ_CONVERTER_PATH') / \
+                          current_app.config.get('USDZ_CONVERTER_SCRIPT_PATH')
 
-    if not usdz_converter_path.is_absolute():
-        usdz_converter_path = Path(get_current_modules_dir()) / Path(App.config.get('USDZ_CONVERTER_PATH'))
-
-    arguments = [_get_converter_interpreter_arg(), usdz_converter_path.resolve().as_posix()]
+    arguments = [_get_converter_interpreter_arg().resolve().as_posix(),
+                 usdz_converter_path.resolve().as_posix()]
 
     for arg in args:
         arguments.append(arg)

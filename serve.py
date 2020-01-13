@@ -2,7 +2,7 @@ import sys
 import socket
 import logging
 from waitress import serve
-from app import App
+from modules.app import App
 
 
 def serve_to_lan():

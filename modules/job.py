@@ -1,11 +1,10 @@
-import json
 from pathlib import Path
 from typing import Iterator, Tuple, Union
 
 from werkzeug.datastructures import ImmutableMultiDict
 from werkzeug.utils import secure_filename
 
-from app import App, db
+from modules.app import App, db
 from modules.create_process import RunProcess
 from modules.file_mgr import FileManager
 from modules.globals import default_tex_coord_set_names

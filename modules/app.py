@@ -12,7 +12,7 @@ from modules.settings import instance_setup
 
 
 # TODO: refactor backEnd > frontEnd variable exchange
-# TODO: build USD with Alembic support [Done - Windows]
+# TODO: build USD with Alembic support [Done - Windows, Done - Ubuntu 18.04 (WSL)]
 
 
 class AppInstanceDirNotSetup(Exception):
@@ -22,10 +22,11 @@ class AppInstanceDirNotSetup(Exception):
     def __str__(self):
         return repr(self.error_msg)
 
+
 if '-r' in sys.argv or '--re-create-instance' in sys.argv:
-    instance_dir = instance_setup(force_recreate=True)
+    instance_dir, converter_dir = instance_setup(force_recreate=True)
 else:
-    instance_dir = instance_setup()
+    instance_dir, converter_dir = instance_setup()
 
 if not instance_dir:
     raise AppInstanceDirNotSetup(f'App instance directory could not be setup. Try to re-install the application or '
@@ -35,6 +36,7 @@ if not instance_dir:
 App = Flask(APP_NAME, instance_path=instance_dir.resolve().as_posix())
 App.config.from_object('config')  # Loads the default config.py from root dir
 App.config.from_pyfile(Path(instance_dir / 'config.py').as_posix())  # Loads config.py from instance dir
+App.config['USDZ_CONVERTER_PATH'] = converter_dir
 
 db = SQLAlchemy(App)
 
@@ -47,3 +49,4 @@ log_listener.start()
 
 _logger = logging.getLogger(APP_NAME)
 _logger.info('Started Log listener in thread: %s', threading.get_ident())
+_logger.info('USD DIR: %s', App.config.get('USDZ_CONVERTER_USD_PATH'))

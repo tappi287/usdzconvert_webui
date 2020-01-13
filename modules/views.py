@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from flask import flash, redirect, render_template, request, url_for, jsonify, make_response, send_from_directory, \
-    send_file
+from flask import flash, redirect, render_template, request, jsonify, make_response, send_from_directory
 
-from app import App, db
+from modules.app import App, db
 from modules.file_mgr import FileManager
 from modules.ftp import FtpRemote
 from modules.globals import LOG_FILE_PATH, get_current_modules_dir
