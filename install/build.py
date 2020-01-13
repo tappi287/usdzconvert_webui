@@ -47,6 +47,14 @@ logging.basicConfig(stream=sys.stdout, format='%(asctime)s %(levelname)s: %(mess
 CFG_FILE = os.path.join(get_current_modules_dir(), 'install', 'usdz_webui.cfg')
 
 
+def delete_file(file: str):
+    if os.path.exists(file):
+        try:
+            os.remove(file)
+        except Exception as e:
+            logging.info(e)
+
+
 class UpdateNsisConfig:
     # Pip wheel config Pipfile
     pip_lock_file = os.path.join(get_current_modules_dir(), 'Pipfile.lock')
@@ -111,35 +119,8 @@ class UpdateNsisConfig:
 
 
 class UpdateFlaskConfig:
-    cfg_file = os.path.join(get_current_modules_dir(), 'config.py')
-    nsi_cfg_file = os.path.join(get_current_modules_dir(), 'install', 'config.py')
     instance_cfg_file = os.path.join(get_current_modules_dir(), 'install', 'instance_config.py')
     nsi_instance_cfg_file = os.path.join(get_current_modules_dir(), 'install', 'instance_config.py')
-
-    @staticmethod
-    def delete(file: str):
-        if os.path.exists(file):
-            try:
-                os.remove(file)
-            except Exception as e:
-                logging.info(e)
-
-    @classmethod
-    def update_flask_config(cls):
-        build_cfg_lines = list()
-
-        with open(cls.cfg_file, 'r') as f:
-            for line in f.readlines():
-                if "'converter" in line:
-                    line = line.replace("'converter", "'../converter")
-                build_cfg_lines.append(line)
-
-        cls.delete(cls.nsi_cfg_file)
-
-        with open(cls.nsi_cfg_file, 'w') as f:
-            f.writelines(build_cfg_lines)
-
-        logging.info('Created updated dist specific Flask config: %s', cls.nsi_cfg_file)
 
     @classmethod
     def create_instance_config_template(cls):
@@ -151,7 +132,7 @@ class UpdateFlaskConfig:
                     continue
                 instance_template_config_lines.append(line)
 
-        cls.delete(cls.nsi_instance_cfg_file)
+        delete_file(cls.nsi_instance_cfg_file)
 
         with open(cls.nsi_instance_cfg_file, 'w') as f:
             f.writelines(instance_template_config_lines)
@@ -160,9 +141,8 @@ class UpdateFlaskConfig:
 
     @classmethod
     def finish(cls):
-        cls.delete(cls.nsi_cfg_file)
         # cls.delete(cls.nsi_instance_cfg_file)
-        logging.info('Cleared temp build config files: %s %s', cls.nsi_cfg_file, cls.nsi_instance_cfg_file)
+        pass
 
 
 def rem_build_dir():
@@ -196,7 +176,7 @@ def move_installer(cfg: configparser.ConfigParser):
         dist_file = os.path.join(dist_dir, installer_file)
 
         if os.path.exists(dist_file):
-            os.remove(dist_file)
+            delete_file(dist_file)
 
         shutil.move(os.path.join(installer_dir, installer_file), dist_file)
         logging.info('Moved installer file to: %s', dist_file)
@@ -216,7 +196,6 @@ def main():
 
     # Create updated Flask config install/config.py
     # Create instance config template install/instance_cfg.py
-    UpdateFlaskConfig.update_flask_config()
     UpdateFlaskConfig.create_instance_config_template()
 
     args = ['pynsist', UpdateNsisConfig.build_cfg_file]
@@ -238,7 +217,7 @@ def main():
                                       f"build_cfg_{UpdateNsisConfig.cfg.get('Application', 'version')}.cfg")
 
         if os.path.exists(build_cfg_dist):
-            os.remove(build_cfg_dist)
+            delete_file(build_cfg_dist)
 
         shutil.move(UpdateNsisConfig.build_cfg_file, build_cfg_dist)
     except Exception as e:

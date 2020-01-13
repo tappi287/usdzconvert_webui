@@ -95,5 +95,5 @@ def setup_log_queue_listener(logger, log_queue):
 
 def setup_logger(name):
     module_logger_name = f'{APP_NAME}.{name}'
-    logging.getLogger(APP_NAME).info('Providing module with logger:', module_logger_name)
+    logging.getLogger(APP_NAME).info('Providing module with logger: %s', module_logger_name)
     return logging.getLogger(module_logger_name)

@@ -8,7 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from modules.globals import APP_NAME, instance_path
 from modules.log import setup_logging
-from modules.settings import instance_setup
+from modules.install import instance_setup
 
 
 # TODO: refactor backEnd > frontEnd variable exchange
@@ -49,4 +49,3 @@ log_listener.start()
 
 _logger = logging.getLogger(APP_NAME)
 _logger.info('Started Log listener in thread: %s', threading.get_ident())
-_logger.info('USD DIR: %s', App.config.get('USDZ_CONVERTER_USD_PATH'))
