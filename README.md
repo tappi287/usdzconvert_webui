@@ -129,5 +129,7 @@ This is an incomplete list of awesome free software used to create this app.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+[license-shield]: https://img.shields.io/github/license/tappi287/usdzconvert_webui
 [license-url]: https://github.com/tappi287/usdzconvert_webui/blob/master/LICENSE
 [product-screenshot]: https://github.com/tappi287/usdzconvert_webui/blob/master/usdz_webui/static/img/screenshot.jpg

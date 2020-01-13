@@ -11,7 +11,7 @@ SHARE_HOST_CONFIG_PATH = instance_path() / 'host_config.cfg'
 
 # Path relative to this config.py or absolute path
 CONVERTER_URL_WIN = 'https://github.com/tappi287/usdzconvert_windows/releases/' \
-                    'download/1.3/pxr_usd_abc1710_py27_win64.7z'
+                    'download/1.4/pxr_usd_min_alembic1710_py27_win64.7z'
 CONVERTER_URL_UNIX = 'https://github.com/tappi287/usdzconvert_windows/releases/' \
                      'download/1.3/pxr_usd_abc1710_py27_ubuntu1804.tar.gz'
 ABC_POST_PROCESSOR_SCRIPT_PATH = Path('proc') / 'post_process_abc.py'
