@@ -106,14 +106,14 @@ def usd_env() -> dict:
     return _create_usd_env(config_path.absolute())
 
 
-def _get_converter_interpreter_arg() -> Union[Path, str]:
+def _get_converter_interpreter_arg() -> str:
     win_interpreter_path = current_app.config.get('USDZ_CONVERTER_PATH') /\
                            current_app.config.get('USDZ_CONVERTER_INTERPRETER')
 
     # Changed to Path.resolve() to resolve eg. dir1/dir2/../dir3 -> dir1/dir3
     if sys.platform == 'win32':
         # python.exe usdzconvert
-        return win_interpreter_path.resolve()
+        return win_interpreter_path.resolve().as_posix()
     else:
         # python2.7 usdzconvert
         return 'python2.7'
@@ -131,10 +131,10 @@ def create_abc_post_process_arguments() -> list:
 def create_usdzconvert_arguments(args: list) -> list:
     """ Create arguments and environment to run usdzconvert with configured local python 2.7 interpreter """
     usdz_converter_path = current_app.config.get('USDZ_CONVERTER_PATH') / \
-                          current_app.config.get('USDZ_CONVERTER_SCRIPT_PATH')
+                        current_app.config.get('USDZ_CONVERTER_SCRIPT_PATH')
 
-    arguments = [_get_converter_interpreter_arg().resolve().as_posix(),
-                 usdz_converter_path.resolve().as_posix()]
+    arguments = [_get_converter_interpreter_arg(),
+                usdz_converter_path.resolve().as_posix()]
 
     for arg in args:
         arguments.append(arg)

@@ -131,7 +131,7 @@ class InstallConverter:
         logging.info('Downloading archive')
         dl_archive = cls.converter_install_dir / Path(config.CONVERTER_URL_UNIX).name
         if not dl_archive.exists():
-            args = ['wget', config.CONVERTER_URL_WIN]
+            args = ['wget', config.CONVERTER_URL_UNIX]
             if cls._run_process(args, cls.converter_install_dir) != 0:
                 logging.error('Error downloading pre-compiled USDZ converter!')
                 return None
