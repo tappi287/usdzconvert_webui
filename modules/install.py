@@ -57,6 +57,11 @@ class InstallConverter:
         logging.info('#################################################################')
         logging.info('First time setup will install USDZ Converter from Github releases')
         logging.info('#################################################################\n\n')
+
+        # -- Create instance converter dir
+        if not cls.converter_install_dir.exists():
+            cls.converter_install_dir.mkdir(parents=True, exist_ok=True)
+
         if sys.platform == 'win32':
             return cls.install_converter_win()
         else:
@@ -78,10 +83,6 @@ class InstallConverter:
 
     @classmethod
     def install_converter_win(cls) -> Union[Path, None]:
-        # -- Create instance converter dir
-        if not cls.converter_install_dir.exists():
-            cls.converter_install_dir.mkdir(parents=True, exist_ok=True)
-
         # -- Download converter
         logging.info('Downloading archive')
         dl_archive = cls.converter_install_dir / Path(config.CONVERTER_URL_WIN).name
@@ -124,9 +125,32 @@ class InstallConverter:
 
         return converter_path
 
-    @staticmethod
-    def install_converter_unix() -> Union[Path, None]:
-        return None
+    @classmethod
+    def install_converter_unix(cls) -> Union[Path, None]:
+        # -- Download converter
+        logging.info('Downloading archive')
+        dl_archive = cls.converter_install_dir / Path(config.CONVERTER_URL_UNIX).name
+        if not dl_archive.exists():
+            args = ['wget', config.CONVERTER_URL_WIN]
+            if cls._run_process(args, cls.converter_install_dir) != 0:
+                logging.error('Error downloading pre-compiled USDZ converter!')
+                return None
+
+        # -- Extract archive
+        logging.info('Extracting 7zip archive')
+        args = ['tar', 'xzf', dl_archive.absolute().as_posix()]
+        if cls._run_process(args, cls.converter_install_dir, os.environ) != 0:
+            logging.error('Error extracting USDZ converter!')
+            return None
+
+        if dl_archive.exists():
+            dl_archive.unlink()
+
+        converter_path = cls.converter_install_dir / dl_archive.stem
+        if not converter_path.exists():
+            return None
+
+        return converter_path
 
 
 def instance_setup(force_recreate: bool = False) -> Tuple[Union[None, Path], Union[None, Path]]:
@@ -161,7 +185,7 @@ def instance_setup(force_recreate: bool = False) -> Tuple[Union[None, Path], Uni
     try:
         with open(Path(instance_location / 'config.py').as_posix(), newline='\n', mode='w') as f:
             f.writelines(template_config_lines)
-        logging.debug('Instance config written to:', Path(instance_location / 'config.py').as_posix())
+        logging.debug('Instance config written to: %s', Path(instance_location / 'config.py').as_posix())
     except Exception as e:
         logging.fatal('Could not create instance configuration! %s', e)
         return None, converter_location
