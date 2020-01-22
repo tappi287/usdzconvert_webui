@@ -6,12 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ content.title }} - {% block title %}{% endblock %}</title>
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='ico/apple-touch-icon.png', version='1') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='ico/favicon-32x32.png', version='1') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='ico/favicon-16x16.png', version='1') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='ico/site.webmanifest', version='1') }}">
-    <link rel="mask-icon" href="{{ url_for('static', filename='ico/safari-pinned-tab.svg', version='1') }}" color="#5bbad5">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='ico/apple-icon-180x180.png', version='2') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ url_for('static', filename='ico/android-icon-192x192.png', version='2') }}">
+    <link rel="icon" type="image/png" sizes="144x144" href="{{ url_for('static', filename='ico/android-icon-144x144.png', version='2') }}">
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='ico/android-icon-96x96.png', version='2') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='ico/android-icon-32x32.png', version='2') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='ico/android-icon-16x16.png', version='2') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='ico/manifest.json', version='2') }}">
     <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='ico/ms-icon-144x144.png', version='2') }}">
     <meta name="theme-color" content="#ffffff">
     <link href="https://fonts.googleapis.com/css?family=Lato|Montserrat|Inconsolata&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -37,7 +40,7 @@
                 </div>
             </nav>
             <a href="/">
-            <img class="title-img" src="{{ url_for('static', filename='img/USD_Logo.svg', version='1') }}" width="46"
+            <img class="title-img" src="{{ url_for('static', filename='img/USDzip_Logo.png', version='1') }}" width="46"
                     height="46"/>
             </a>
             <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
