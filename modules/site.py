@@ -26,15 +26,18 @@ class JobFormFields:
         channel = 'texture_channel'
         material = 'texture_material'
         uv_coord = 'uv_coord'
+        material_color = 'material_color'
+        material_color_desc = 'Use RGBA color as fallback value for the current map.'
         uv_desc = "Leave blank to auto-detect appropriate UV set. [Optional] Enter the name of the UV set to " \
                   "use for the current material."
         material_desc = "Leave blank to assign map to the Default material. [Optional] enter the name of the input " \
                         "file material you want this texture map assigned to"
         file_storage = 'texture_map'
+        add_color_btn_id = 'add_button'
 
         # Html template will use above to set html element class name
         # FrontEnd will iterate html_elements list and enumerate eg. texture_type_1
-        html_element_class_names = [file_label, file, type, channel, material, type_desc]
+        html_element_class_names = [file_label, file, type, channel, material, type_desc, uv_coord, material_color]
 
         # Template values
         texture_map_types = ['diffuseColor', 'normal', 'emissiveColor', 'metallic', 'roughness', 'occlusion',

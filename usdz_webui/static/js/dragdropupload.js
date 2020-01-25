@@ -14,6 +14,52 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
     textureTypesDict[texType].channel_available = textureMapDict.texture_map_channel[i]
   }
 
+  function createPicker (inputElement, buttonElement) {
+    const pickr = new Pickr({
+      el: buttonElement,
+      /* useAsButton: true, */
+      default: null,
+      theme: 'nano',
+
+      components: {
+        preview: true,
+        opacity: true,
+        hue: true,
+
+        interaction: {
+          hex: true,
+          rgba: true,
+          hsva: false,
+          input: true,
+          save: true,
+          clear: true,
+          cancel: true
+        }
+      }
+    }).on('init', pickr => {
+      if (pickr.getSelectedColor() !== null) {
+        inputElement.value = pickr.getSelectedColor().toRGBA().toString(0)
+      } else {
+        inputElement.value = ''
+      }
+    }).on('show', pickr => {
+      if (pickr.getSelectedColor() === null) {
+        /* Set pickr to a color so it will show something meaningful upon show */
+        pickr.setColor('rgba(135, 67, 67, 1)', true/* silent */)
+      }
+    }).on('save', (color, pickr) => {
+      if (color !== null) {
+        inputElement.value = color.toRGBA().toString(0)
+      } else {
+        inputElement.value = ''
+      }
+      pickr.hide()
+    }).on('cancel', pickr => {
+      pickr.hide()
+    })
+    return pickr
+  }
+
   function getFileExtension (path) {
     var regexp = /\.([0-9a-z]+)(?:[?#]|$)/i
     var extension = path.match(regexp)
@@ -129,12 +175,15 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
   function createTextureMapField (container, event) {
     const p = document.getElementById('drop_text')
 
+    /* event = null means the add color button was pressed */
     /* Abort on none-allowed files */
-    if (checkFiles(event.dataTransfer.files, isFileMapAllowed) === false) {
-      p.innerHTML = 'Allowed files: ' + uploadAllowedMapExt
-      p.style.display = 'block'
-      p.style.color = 'red'
-      return
+    if (event !== null) {
+      if (checkFiles(event.dataTransfer.files, isFileMapAllowed) === false) {
+        p.innerHTML = 'Allowed files: ' + uploadAllowedMapExt
+        p.style.display = 'block'
+        p.style.color = 'red'
+        return
+      }
     }
 
     p.style.display = 'none'
@@ -144,12 +193,22 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
 
     /* Store the dropped files in hidden input because files array is immutable */
     const form = document.forms.reused_form
-    const f = document.createElement('input')
-    f.type = 'file'
-    f.name = 'texture_map_store_' + dropCounter
-    f.style.display = 'none'
-    f.files = event.dataTransfer.files
-    form.appendChild(f)
+    const f = 'none'
+    if (event !== null) {
+      const f = document.createElement('input')
+      f.type = 'file'
+      f.name = 'texture_map_store_' + dropCounter
+      f.style.display = 'none'
+      f.files = event.dataTransfer.files
+      form.appendChild(f)
+    } else {
+      const _file = []
+      _file.name = 'EmptyMap_' + textureMapCounter
+
+      event = []
+      event.dataTransfer = []
+      event.dataTransfer.files = [_file]
+    }
 
     /* Disable async uploads for now */
     if (f === null) {
@@ -169,6 +228,12 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
       /* Prepare storage of relevant input elements */
       let mapTypeSelect = null; let mapTypeDescSpan = null; let channelSelect = null
 
+      /* Color Picker */
+      const colorInput = textureNode.getElementsByTagName('input').material_color
+      const colorBtn = textureNode.getElementsByTagName('button').material_color
+      colorInput.name = textureMapDict.material_color + '_' + textureMapCounter
+      createPicker(colorInput, colorBtn)
+
       /* Rename input/select elements with unique names */
       textureMapDict.html_element_class_names.forEach(function (value) {
         /* querySelector does not work outside the document */
@@ -182,7 +247,7 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
         if (value === textureMapDict.file_label) { e[0].innerHTML = shortenFilename(file.name) };
         if (value === textureMapDict.type) { mapTypeSelect = e[0] };
         if (value === textureMapDict.type_desc) { mapTypeDescSpan = e[0] };
-        if (value === textureMapDict.channel) { channelSelect = e[0] }
+        if (value === textureMapDict.channel) { channelSelect = e[0] };
       })
 
       /* Update texture type desc span on Map type <select> change event */
@@ -205,6 +270,7 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
       const dropzone = document.getElementById('dropzone')
       const sceneFileDropzone = document.getElementById('scene-file-dropzone')
       const textureMapContainer = document.getElementById('texture-map-container')
+      const addColorButton = document.getElementById(textureMapDict.add_color_btn_id)
 
       try {
         /* Test if our const where created by the Jinja template */
@@ -258,6 +324,10 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
         event.preventDefault()
         dropzone.classList.remove('entered')
         createTextureMapField(textureMapContainer, event)
+      }
+
+      addColorButton.onclick = function () {
+        createTextureMapField(textureMapContainer, null)
       }
       console.log('Tx Maps Drag n Drop ready.')
     }

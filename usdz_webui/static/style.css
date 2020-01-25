@@ -203,12 +203,52 @@ th.downloads, td.downloads {
 .size{
     font-size:12px;}
 
+button#add_button, button#add_button:focus {
+    transition: all 0.1s ease-in-out;
+    height: 25px; width: 25px;
+    border: none;
+    border-radius: 2px;
+    background: #cdcdcd; outline: none;
+    position: relative; display: block; left: 96.5%;
+}
+button#add_button:hover {
+    background: #3498db;
+}
+.add-icon::after,
+.add-icon::before {
+  position: absolute;
+  content:"";
+  background: #3c3c3c;
+  overflow: hidden;
+}
+.add-icon::before {
+  height: 80%; width: 2px;
+  left: calc(50% - 1px);
+  top: calc(50% - 40%);
+  border-radius: 1px;
+}
+.add-icon::after {
+  height: 2px; width: 80%;
+  top: calc(50% - 1px);
+  left: calc(50% - 40%);
+  border-radius: 1px;
+}
+
 #texture-map-container tr:first-child {
     border: none;
 }
 
 .texture-map-entry label {
     font-size: small;
+}
+.texture-map-entry input {
+    width: 100px;
+}
+.texture-map-entry .pickr {
+    display: inline;
+}
+.texture-map-entry button.pcr-button {
+    height: 22px;
 }
 
 #texture-map-container th {

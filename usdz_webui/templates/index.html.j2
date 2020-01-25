@@ -2,6 +2,8 @@
 {% block title %}Index{% endblock %}
 {% block head %}
     {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='nano.min.css') }}"/>
+    <script src="{{ url_for('static', filename='js/pickr.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='js/dragdropupload.js') }}"></script>
     <script type="text/javascript">
         var t = dragDropUpload (
@@ -37,8 +39,11 @@
         <div id="dropzone">
             <label>Texture Maps</label>
             <div id="texture-map-spacer"></div>
-            <p id="drop_text" class="description">Drag n drop texture maps here</p>
+            <p id="drop_text" class="description">Drag n drop texture maps here or add [+] entries to define materials and colors</p>
             <div id="texture-map-container"></div>
+            <button type="button" id="{{ content.job_form.TextureMap.add_color_btn_id }}">
+                <div class="add-icon"></div>
+            </button>
         </div>
         <br />
 
@@ -121,6 +126,12 @@
                             Uv
                             <input name="{{ content.job_form.TextureMap.uv_coord }}" type="text" 
                             title="{{ content.job_form.TextureMap.uv_desc|e }}" class="{{ content.job_form.TextureMap.uv_coord }}">
+                        </label>
+                        <label title="{{ content.job_form.TextureMap.material_color_desc|e }}">
+                            Color
+                            <input style="display: none;" name="{{ content.job_form.TextureMap.material_color }}"
+                            class="{{ content.job_form.TextureMap.material_color }}" type="text">
+                            <button name="{{ content.job_form.TextureMap.material_color }}"></button>
                         </label>
                     </td>
                 </tr>
