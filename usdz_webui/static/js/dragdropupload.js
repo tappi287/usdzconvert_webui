@@ -1,6 +1,6 @@
 'use_strict'
 
-function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapDict, sceneFileInputName) {
+function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapDict, sceneFileInputName, Pickr) {
   var textureMapCounter = 0
   var dropCounter = 0
   var textureTypesDict = {}
@@ -27,9 +27,10 @@ function dragDropUpload (uploadAllowedMapExt, uploadAllowedSceneExt, textureMapD
         hue: true,
 
         interaction: {
-          hex: true,
+          hex: false,
           rgba: true,
           hsva: false,
+          hsla: true,
           input: true,
           save: true,
           clear: true,

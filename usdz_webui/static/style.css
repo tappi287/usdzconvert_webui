@@ -32,11 +32,23 @@ h1, h2, h3, h4, h5, h6, h7, .montform label, details > summary {
 .error {
     color: rgb(238, 42, 42);}
 
+.page-title {
+    margin-bottom: 25px; color: #F0F0F0;
+    text-decoration: none;
+    transition: all 0.1s ease-in-out;
+}
+.page-title:hover {
+    color: #3498db;
+}
 .title-img {
     float: left;
     margin-top: 8px;
-    margin-right: 8px;}
-
+    margin-right: 8px;
+}
+.title-img:hover {
+    filter: contrast(1.5);
+}
+    
 .page-description {
     font-family: "Segoe UI Light", "Helvetica Neue", sans-serif, -apple-system,BlinkMacSystemFont,"PT Sans",Oxygen-Sans,
     Ubuntu,Cantarell;
@@ -51,9 +63,6 @@ div.server-message {
 
 .server-message span {
     padding: 0 15px;}
-
-.page-title {
-    margin-bottom: 25px;}
 
 #feedback-page{
 	text-align:center;}
@@ -113,11 +122,17 @@ progress {
 
 details > summary {
     cursor: pointer;
-    outline: none;}
+    outline: none;
+    transition: all 0.2s ease-in-out;
+}
 
 details#image-maps > summary, details#options > summary {
     color: rgb(238, 238, 238);
-    padding: 5px 0;}
+    padding: 5px 0;
+}
+details#options > summary:hover, details > summary:hover {
+    color: #3498db;
+}
 
 .button-blue, .button-red {
 	font-family: 'Montserrat', Arial, Helvetica, sans-serif;
@@ -253,7 +268,8 @@ button#add_button:hover {
 
 #texture-map-container th {
     background-color: rgb(171, 191, 210);
-    border-radius: 10px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     padding: 4px 4px 6px 5px;
 }
 

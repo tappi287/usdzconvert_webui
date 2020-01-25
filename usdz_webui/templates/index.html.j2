@@ -10,7 +10,8 @@
                 {{ upload_allowed_maps_ext|tojson }},
                 {{ upload_allowed_scene_ext|tojson }},
                 {{ content.job_form.TextureMap.as_json_dict()|tojson }},
-                {{ content.job_form.scene_file_field.id|tojson }}
+                {{ content.job_form.scene_file_field.id|tojson }},
+                Pickr
             )
     </script>
 {% endblock %}
@@ -41,7 +42,8 @@
             <div id="texture-map-spacer"></div>
             <p id="drop_text" class="description">Drag n drop texture maps here or add [+] entries to define materials and colors</p>
             <div id="texture-map-container"></div>
-            <button type="button" id="{{ content.job_form.TextureMap.add_color_btn_id }}">
+            <button type="button" id="{{ content.job_form.TextureMap.add_color_btn_id }}"
+            title="{{ content.job_form.TextureMap.add_color_btn_desc }}">
                 <div class="add-icon"></div>
             </button>
         </div>

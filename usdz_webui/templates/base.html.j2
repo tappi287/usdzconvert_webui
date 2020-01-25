@@ -38,11 +38,11 @@
                     </ul>
                 </div>
             </nav>
-            <a href="/">
-            <img class="title-img" src="{{ url_for('static', filename='img/USDzip_Logo.png', version='1') }}" width="46"
-                    height="46"/>
+            <a href="/" class="page-title">
+                <img class="title-img" src="{{ url_for('static', filename='img/USDzip_Logo.png', version='1') }}" width="46"
+                        height="46"/>
+                <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
             </a>
-            <h3 class="page-title">{% block page_title %}{% endblock %}</h3>
             <div class="page-description">
                 {% block description %}{% endblock %}
             </div>

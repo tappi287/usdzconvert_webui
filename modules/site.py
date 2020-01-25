@@ -34,6 +34,7 @@ class JobFormFields:
                         "file material you want this texture map assigned to"
         file_storage = 'texture_map'
         add_color_btn_id = 'add_button'
+        add_color_btn_desc = "Add empty texture map entry to define a material and it's fallback color"
 
         # Html template will use above to set html element class name
         # FrontEnd will iterate html_elements list and enumerate eg. texture_type_1
@@ -47,19 +48,22 @@ class JobFormFields:
             'Diffuse Map', 'Normal Map', 'Emissive Map', 'Metallic Map', 'Roughness Map', 'Occlusion Map',
             'Opacity Map',
             'Clearcoat Map', 'Clearcoat Roughness Map']
-        texture_map_desc = ['Use <file> as texture for diffuseColor.', 'Use <file> as texture for normal.',
-                            'Use <file> as texture for emissiveColor.',
+        texture_map_desc = ['Use <file> as texture for diffuseColor. [Optional] Use Color Pickr to define a fallback color',
+                            'Use <file> as texture for normal. [Optional] Use Color Pickr to define x y z fallback values',
+                            'Use <file> as texture for emissiveColor. [Optional] Use Color Pickr to define a fallback color',
                             'Use <file> as texture for metallic. [Optional] Select texture color channel (r, g, '
-                            'b or a)',
+                            'b or a). [Optional] Use Color Pickr to define a fallback luminosity(hue will be ignored)',
                             'Use <file> as texture for roughness. [Optional] Select texture color channel (r, g, '
-                            'b or a)',
+                            'b or a). [Optional] Use Color Pickr to define a fallback luminosity(hue will be ignored)',
                             'Use <file> as texture for occlusion. [Optional] Select texture color channel (r, g, '
-                            'b or a)',
-                            'Use <file> as texture for opacity. [Optional] Select texture color channel (r, g, b or a)',
+                            'b or a). [Optional] Use Color Pickr to define a fallback luminosity(hue will be ignored)',
+                            'Use <file> as texture for opacity. [Optional] Select texture color channel (r, g, b or a). '
+                            '[Optional] Use Color Pickr to define a fallback luminosity(hue will be ignored)',
                             'Use <file> as texture for clearcoat. [Optional] Select texture color channel (r, g, '
-                            'b or a)',
+                            'b or a). [Optional] Use Color Pickr to define a fallback luminosity(hue will be ignored)',
                             'Use <file> as texture for clearcoat roughness. [Optional] Select texture color channel '
-                            '(r, g, b or a)']
+                            '(r, g, b or a). [Optional] Use Color Pickr to define a fallback luminosity'
+                            '(hue will be ignored)']
         texture_map_list = [(t, l, d) for t, l, d in zip(texture_map_types, texture_map_labels, texture_map_desc)]
 
     class OptionField:
