@@ -11,6 +11,7 @@ from modules.globals import default_tex_coord_set_names
 from modules.log import setup_logger
 from modules.site import JobFormFields, Urls
 from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env, create_abc_post_process_arguments
+from modules.utils import get_usdz_color_argument
 
 _logger = setup_logger(__name__)
 
@@ -95,7 +96,12 @@ class ConversionJob(db.Model):
     def list_files(self) -> Iterator[Tuple[str, str, str, str, str]]:
         """ List files to Jinja html template """
         for file_id, file_entry in self.files.items():
-            p = file_entry.get("file_path").name
+            file_path = file_entry.get("file_path")
+            if not file_path:
+                p = 'EmptyMap'
+            else:
+                p = file_path.name
+
             short_file_name = p if len(p) < 43 else f'...{p[-40:]}'
 
             yield (file_id,
@@ -103,7 +109,9 @@ class ConversionJob(db.Model):
                    file_entry.get('use_channel', ''),
                    file_entry.get(JobFormFields.TextureMap.material, ''),
                    file_entry.get(JobFormFields.TextureMap.uv_coord, ''),
-                   file_entry.get(JobFormFields.TextureMap.type, ''))
+                   file_entry.get(JobFormFields.TextureMap.type, ''),
+                   file_entry.get(JobFormFields.TextureMap.material_color, ''),
+                   )
 
     def message_update(self, msg):
         self.process_messages += f'{msg}\n'
@@ -233,9 +241,11 @@ class JobManager:
             if not file_id.startswith(JobFormFields.TextureMap.file_storage):
                 continue
 
-            file_path = Path(file_entry.get("file_path"))
+            file_path = file_entry.get("file_path")
             material = file_entry.get(JobFormFields.TextureMap.material)
             tex_coord = file_entry.get(JobFormFields.TextureMap.uv_coord)
+            map_type = file_entry.get(JobFormFields.TextureMap.type)
+            color = get_usdz_color_argument(map_type, file_entry.get(JobFormFields.TextureMap.material_color))
 
             # Add material argument
             if material and material != current_material:
@@ -249,13 +259,19 @@ class JobManager:
                     args.append(tex_coord)
 
             # Add texture maps file arguments
-            args.append(f'-{file_entry.get(JobFormFields.TextureMap.type)}')
+            args.append(f'-{map_type}')
 
             channel = file_entry.get(JobFormFields.TextureMap.channel)
             if channel:
                 _logger.info('Adding channel argument: %s', channel)
                 args.append(channel.lower())
-            args.append(file_path.as_posix())
+
+            if file_path:
+                args.append(Path(file_path).as_posix())
+
+            # Add fallback color or luminosity constant
+            if color:
+                args.append(color)
 
         return args
 

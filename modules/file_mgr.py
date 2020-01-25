@@ -343,21 +343,22 @@ class FileManager:
 
             file = texture_files.get(value)
             if not file:
-                _logger.error('No texture file found for %s!', key)
-                continue
+                _logger.info('Empty texture file found for %s', key)
 
             self.files[f'{JobFormFields.TextureMap.file_storage}_{map_num}'] = {
-                'file_path': self._save_file(file),
+                'file_path': self._save_file(file),  # Will set None for Empty maps
                 texture_ids.channel: form.get(f'{texture_ids.channel}_{map_num}', ''),
                 texture_ids.uv_coord: form.get(f'{texture_ids.uv_coord}_{map_num}', ''),
                 texture_ids.material: form.get(f'{texture_ids.material}_{map_num}', ''),
                 texture_ids.type: form.get(f'{texture_ids.type}_{map_num}', ''),
+                texture_ids.material_color: form.get(f'{texture_ids.material_color}_{map_num}', ''),
                 }
 
             line = "\n{}{} {}".format(
                 form.get(f'{texture_ids.material}_{map_num} ', ''),
                 form.get(f'{texture_ids.type}_{map_num}', ''),
-                file.filename)
+                self.files[f'{JobFormFields.TextureMap.file_storage}_{map_num}']['file_path']
+                )
             _logger.debug('Saved texture_map: %s', line)
             msg += line
 

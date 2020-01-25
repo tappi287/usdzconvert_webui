@@ -66,6 +66,16 @@ class JobFormFields:
                             '(hue will be ignored)']
         texture_map_list = [(t, l, d) for t, l, d in zip(texture_map_types, texture_map_labels, texture_map_desc)]
 
+    class TextureMapColor:
+        rgb = 0
+        rgba = 1
+        xyz = 2
+        lum = 3
+
+        # Ordered by TextureMap.texture_map_types
+        # diffuse, normal, emissive, metallic, rough, occlu, opacity, clearc, clearc-rough
+        params = [rgb, xyz, rgb, lum, lum, lum, lum, lum, lum]
+
     class OptionField:
         def __init__(self, _id: str, label: str, desc: str, input_type: str):
             self.id, self.label, self.desc = _id, label, desc

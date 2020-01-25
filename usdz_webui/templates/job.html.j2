@@ -89,8 +89,9 @@
                             <th>Material</th>
                             <th>UV Set</th>
                             <th>Map Type</th>
+                            <th>Color</th>
                         </tr>
-                        {% for file_id, file, channel, material, uv_set, map_type in job.list_files() %}
+                        {% for file_id, file, channel, material, uv_set, map_type, color in job.list_files() %}
                         <tr>
                             <td>{{ file_id }}</td>
                             <td>{{ file }}</td>
@@ -98,6 +99,7 @@
                             <td>{{ material }}</td>
                             <td>{{ uv_set }}</td>
                             <td>{{ map_type }}</td>
+                            <td>{{ color }}</td>
                         </tr>
                         {% endfor %}
                     </table>

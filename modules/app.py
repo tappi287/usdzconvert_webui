@@ -11,6 +11,7 @@ from modules.log import setup_logging
 from modules.install import instance_setup
 
 
+# TODO: add preview image generation with usdrecord
 # TODO: refactor backEnd > frontEnd variable exchange
 # TODO: build USD with Alembic support [Done - Windows, Done - Ubuntu 18.04 (WSL)]
 
