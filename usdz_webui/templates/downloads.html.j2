@@ -1,7 +1,12 @@
 {% extends "base.html.j2" %}
 {% block title %}Downloads{% endblock %}
 {% block head %}
- {{ super() }}
+    {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/downloads.js') }}"></script>
+    <script type="text/javascript">
+        var dl = {{ downloads|tojson }}
+        var d = downloads (dl)
+    </script>
 {% endblock %}
 
 {% block page_title %}
@@ -30,7 +35,13 @@
             {% for entry_id, entry in downloads %}
                 <tr>
                     <td>
-                        <a href="{{ entry.get('url') }}">{{ entry.get('name') }}</a>
+                        <a id="dl_link_{{ entry_id }}" href="{{ entry.get('url') }}">
+                            {{ entry.get('name') }}
+                            {% if entry.get('preview_img') %}
+                            <img style="display: none;" id="dl_img_{{ entry_id }}" 
+                            class="download-preview" src="{{ entry.get('preview_img') }}" />
+                            {% endif %}
+                        </a>
                     </td>
                     <td>
                         {{ entry.get('size') }}
@@ -45,6 +56,12 @@
                             title="Permanently delete the download file from the server."
                             onclick="return confirm('Are you sure you want to permanently delete {{ download_file }}?')">Delete</button>
                         </form>
+                        {% if entry.get('preview_img') %}
+                        <form method="get" action="{{ entry.get('preview_img') }}" class="montform">
+                            <button type="submit" id="dl_pre_{{ entry_id }}" class="button-blue"
+                            title="Download a preview image">Preview</button>
+                        </form>
+                        {% endif %}
                         <form method="get" action="{{ entry.get('url') }}" class="montform">
                             <button type="submit" id="dl_{{ entry_id }}" class="button-blue">Download</button>
                         </form>

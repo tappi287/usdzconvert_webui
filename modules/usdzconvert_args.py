@@ -1,9 +1,9 @@
 import os
 import sys
 from pathlib import Path
-from typing import Union
 
 from flask import current_app
+
 from modules.globals import get_current_modules_dir
 from modules.log import setup_logger
 
@@ -117,6 +117,12 @@ def _get_converter_interpreter_arg() -> str:
     else:
         # python2.7 usdzconvert
         return 'python2.7'
+
+
+def create_usdscript_arguments(usd_script_name: str) -> list:
+    p = current_app.config.get('USDZ_CONVERTER_PATH') / \
+        current_app.config.get('USDZ_CONVERTER_USD_PATH') / 'bin' / usd_script_name
+    return [_get_converter_interpreter_arg(), p]
 
 
 def create_abc_post_process_arguments() -> list:

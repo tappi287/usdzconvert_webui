@@ -59,7 +59,7 @@ def get_usdz_color_argument(map_type: str, rgba_string: str) -> str:
     """ Get the usdzconvert color argument by texture map type.
 
         Example:
-        diffuse -> '123 123 123'
+        diffuse -> '0.19, 0.19, 0.19'
         metallic -> '0.19806931955994886'
 
         :param str map_type: the texture map type as string, must be one of JobFormField.TextureMap.texture_map_types

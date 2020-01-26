@@ -59,7 +59,9 @@ div.server-message {
     background-color: rgb(87, 76, 114);
     border-radius: 10px;
     padding: 5px 0;
-    margin: 15px 0;}
+    margin: 15px 0;
+    overflow-wrap: break-word;
+}
 
 .server-message span {
     padding: 0 15px;}
@@ -151,11 +153,19 @@ details#options > summary:hover, details > summary:hover {
     font-weight:700;}
 
 #share-preview-image {
+    max-width: 30%;
+}
+.download-preview {
+    position: absolute;
+}
+#share-preview-image, .preview_image, .download-preview {
     display: block;
     border: 2px solid #cdcdcd;
     border-radius: 5px;
     margin: 0 auto;
-    max-width: 30%;
+    background-image: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%, #eee 100%),linear-gradient(45deg, #eee 25%, white 25%, white 75%, #eee 75%, #eee 100%);
+    background-position: 0px 0px, 10px 10px;
+    background-size: 20px 20px;
 }
 #share-img-drop-text {
     text-align: center;

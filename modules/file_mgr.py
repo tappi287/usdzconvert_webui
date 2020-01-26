@@ -191,8 +191,19 @@ class FileManager:
         # Iterate sub directory's
         for folder in current_app.config.get('DOWNLOAD_FOLDER').glob('*'):
             for file in folder.glob('*.*'):
-                # Create url
+                if file.suffix.replace('.', '') not in current_app.config.get('UPLOAD_ALLOWED_SCENE'):
+                    continue
+
+                # Create file url
                 download_url = f'{Urls.downloads}/{folder.name}/{file.name}'
+
+                # Preview Image Url
+                preview_file = file.with_suffix(current_app.config.get("PREVIEW_IMG_SUFFIX"))
+                if preview_file.exists():
+                    preview_url = f'{Urls.downloads}/{folder.name}/{preview_file.name}'
+                    _logger.debug('Setting download preview img url: %s', preview_url)
+                else:
+                    preview_url = ''
 
                 try:
                     # File size
@@ -205,7 +216,8 @@ class FileManager:
                     created = 'N/A'
 
                 # Store entry
-                download_files[folder.name] = {'url': download_url, 'name': file.name, 'size': size, 'created': created}
+                download_files[folder.name] = {'url': download_url, 'preview_img': preview_url,
+                                               'name': file.name, 'size': size, 'created': created}
 
         return download_files
 

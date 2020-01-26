@@ -10,7 +10,8 @@ from modules.file_mgr import FileManager
 from modules.globals import default_tex_coord_set_names
 from modules.log import setup_logger
 from modules.site import JobFormFields, Urls
-from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env, create_abc_post_process_arguments
+from modules.usdzconvert_args import create_usdzconvert_arguments, usd_env, create_abc_post_process_arguments, \
+    create_usdscript_arguments
 from modules.utils import get_usdz_color_argument
 
 _logger = setup_logger(__name__)
@@ -50,6 +51,7 @@ class ConversionJob(db.Model):
     def __init__(self, job_dir: Path, files: dict, form: ImmutableMultiDict):
         self.files = files
         self.files['job_dir'] = {'file_path': job_dir}
+        self.files['preview'] = {'file_path': Path('.')}
 
         self.option_args = self.create_options(form)
         self.additional_args = form.get(JobFormFields.additional_args, '')
@@ -87,18 +89,26 @@ class ConversionJob(db.Model):
     def out_file(self) -> Path:
         return self.files.get('out_file', dict()).get('file_path', Path('.'))
 
-    def set_out_file(self, val: Path):
-        self.files['out_file']['file_path'] = val
+    def preview_file(self) -> Path:
+        return self.files.get('preview', dict()).get('file_path', Path('.'))
 
+    def _set_file(self, file_key: str, val: Path):
+        self.files[file_key]['file_path'] = val
         # Force a database update of PickeldType by reassigning the value
         ConversionJob.query.filter_by(job_id=self.job_id).update(dict(files=self.files))
+
+    def set_out_file(self, val: Path):
+        self._set_file('out_file', val)
+
+    def set_preview_file(self, val: Path):
+        self._set_file('preview', val)
 
     def list_files(self) -> Iterator[Tuple[str, str, str, str, str]]:
         """ List files to Jinja html template """
         for file_id, file_entry in self.files.items():
             file_path = file_entry.get("file_path")
             if not file_path:
-                p = 'EmptyMap'
+                p = '- No file set -'
             else:
                 p = file_path.name
 
@@ -116,6 +126,11 @@ class ConversionJob(db.Model):
     def message_update(self, msg):
         self.process_messages += f'{msg}\n'
         self.progress = min(self.progress, self.progress + 15)
+
+    def preview_url(self) -> Union[None, str]:
+        if self.preview_file().exists() and self.completed:
+            return f'{Urls.downloads}/' \
+                   f'{secure_filename(self.job_dir().name)}/{self.preview_file().name}'
 
     def direct_download_url(self) -> Union[None, str]:
         if self.state == self.States.failed:
@@ -138,6 +153,14 @@ class ConversionJob(db.Model):
     def set_in_progress(self):
         self.state = self.States.in_progress
         self.progress = 5
+
+    def set_preview_image_static(self):
+        img_file_path = FileManager.move_to_static_dir(self.preview_file(), self.job_dir().name)
+        if img_file_path is None:
+            _logger.error('Could not move preview image file.')
+            return
+
+        self.set_preview_file(img_file_path)
 
     def set_complete(self):
         # Move Job file to static, public available, directory
@@ -320,6 +343,38 @@ class JobManager:
         return True
 
     @classmethod
+    def _run_usdrecord(cls, job: ConversionJob):
+        """ Create a preview image of the output scene file """
+        args = create_usdscript_arguments('usdrecord')
+        if not args[-1:][0].exists():
+            # Our environment does not provide USD imaging components
+            return
+
+        usdz_file = job.out_file()
+        if not usdz_file.exists():
+            # No scene file to create preview image from
+            return
+        img_file = usdz_file.with_suffix(App.config.get('PREVIEW_IMG_SUFFIX'))
+        if img_file.exists():
+            # Preview image already created
+            return
+        job.set_preview_file(img_file)
+
+        args += [usdz_file, img_file, '--imageWidth', '400', '--renderer', 'GL']
+        post_process_thread = RunProcess(args, job.job_dir(), usd_env(), job.job_id,
+                                         cls._preview_image_generated, None, cls._message_callback)
+        post_process_thread.start()
+        _logger.info('Started preview image generation thread with id: %s', post_process_thread.ident)
+        db.session.commit()
+
+    @classmethod
+    def _preview_image_generated(cls, thread_id: int):
+        with App.app_context():
+            job = cls.get_job_by_id(thread_id)
+            job.set_preview_image_static()
+            db.session.commit()
+
+    @classmethod
     def _failed_callback(cls, thread_id: int, error: str):
         with App.app_context():
             _logger.info('Job processing failed: %s', error)
@@ -332,12 +387,16 @@ class JobManager:
         with App.app_context():
             job = cls.get_job_by_id(thread_id)
 
+            # -- Post process alembic input --
             if cls._run_post_process(job):
                 return
 
             _logger.info('Job processing finished.')
             job.set_complete()
             db.session.commit()
+
+            # -- Try to create scene preview image --
+            cls._run_usdrecord(job)
         cls.run_job_queue()
 
     @classmethod

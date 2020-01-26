@@ -81,6 +81,11 @@
                         </tr>
                         {% endif %}
                     </table>
+                    {% if job.preview_file().is_file() and job.preview_file().exists(): %}
+                    <div class="file">
+                        <img class="preview_image" src="{{ job.preview_url() }}">
+                    </div>
+                    {% endif %}
                     <table>
                         <tr class="title">
                             <th>Element</th>

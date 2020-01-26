@@ -1,14 +1,14 @@
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 from cryptography.fernet import Fernet
 
 import config
 from modules.create_process import create_piped_process, log_subprocess_output
-from modules.globals import instance_path, get_current_modules_dir
+from modules.globals import get_current_modules_dir, instance_path
 
 # -- Log to Stdout keeping it short
 logging.basicConfig(stream=sys.stdout, format='%(asctime)s %(levelname)s: %(message)s',
@@ -69,7 +69,12 @@ class InstallConverter:
 
     @classmethod
     def locate_seven_zip_win(cls) -> Path:
-        return Path(get_current_modules_dir()).parent / '7zr.exe'
+        installed_location = Path(get_current_modules_dir()).parent / '7zr.exe'
+        dev_location = Path(get_current_modules_dir()) / 'install' / '7zr.exe'
+        if dev_location.exists():
+            return dev_location
+
+        return installed_location
 
     @classmethod
     def _run_process(cls, args: list, cwd: Path, env: dict = None):
@@ -77,7 +82,8 @@ class InstallConverter:
         process = create_piped_process(args, current_working_directory=cwd, env=env)
         with process.stdout:
             log_subprocess_output(process.stdout, None)
-        _ = process.wait(timeout=800.0)
+
+        _ = process.wait()
 
         return process.returncode
 

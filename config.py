@@ -7,11 +7,13 @@ DOWNLOAD_FOLDER = download_path()
 UPLOAD_ALLOWED_SCENE = {'obj', 'gltf', 'bin', 'glb', 'fbx', 'abc', 'usd', 'usda', 'usdc', 'usdz'}
 UPLOAD_ALLOWED_MAPS = {'tga', 'png', 'jpg', 'jpeg', 'gif'}
 UPLOAD_ALLOWED_EXT = UPLOAD_ALLOWED_SCENE.union(UPLOAD_ALLOWED_MAPS)
+PREVIEW_IMG_SUFFIX = '.png'
 SHARE_HOST_CONFIG_PATH = instance_path() / 'host_config.cfg'
 
 # usdzconvert_windows 1.4 no-imaging monolithic Windows build
+# usdzconvert_windows 1.3 with imaging
 CONVERTER_URL_WIN = 'https://github.com/tappi287/usdzconvert_windows/releases/' \
-                    'download/1.4/pxr_usd_min_alembic1710_py27_win64.7z'
+                    'download/1.3/pxr_usd_abc1710_py27_win64.7z'
 # usdzconvert_windows 1.3 Unix build
 CONVERTER_URL_UNIX = 'https://github.com/tappi287/usdzconvert_windows/releases/' \
                      'download/1.3/pxr_usd_abc1710_py27_ubuntu1804.tar.gz'
