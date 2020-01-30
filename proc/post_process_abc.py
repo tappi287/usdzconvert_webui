@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os
+import shutil
 import sys
 import re
 import logging
@@ -145,6 +146,7 @@ def main(in_file):
         try:
             os.remove(in_file)
             os.remove(tmp_usdc)
+            shutil.rmtree(os.path.join(os.path.dirname(tmp_usdc), 'textures'), ignore_errors=True)
         except Exception as e:
             # Notice the error but Happy End either way!
             logging.error('Deleted temp file with result:', e)
@@ -155,7 +157,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('file_path', help='Job files as json dict')
     args = parser.parse_args()
-    logging.info('Received args: %s', args.file_path)
 
     if not args.file_path:
         logging.error('Argument is missing.')

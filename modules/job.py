@@ -123,6 +123,25 @@ class ConversionJob(db.Model):
                    file_entry.get(JobFormFields.TextureMap.material_color, ''),
                    )
 
+    @staticmethod
+    def create_arguments_message(args) -> str:
+        arg_message = ''
+        for arg in args:
+            try:
+                p = Path(arg)
+            except Exception:
+                p = None
+
+            if p is not None:
+                arg_message += f'{p.name} '
+            else:
+                arg_message += f'{arg} '
+
+        return arg_message.rstrip(' ')
+
+    def add_arguments_message(self, args):
+        self.message_update(self.create_arguments_message(args) + '\n')
+
     def message_update(self, msg):
         self.process_messages += f'{msg}\n'
         self.progress = min(self.progress, self.progress + 15)
@@ -219,19 +238,26 @@ class JobManager:
 
         return False, f'Could not delete job {job_id}. Unknown error.'
 
-    @staticmethod
-    def get_tex_coord_default_name_from_file_type(file: Path) -> str:
-        return default_tex_coord_set_names.get(file.suffix.casefold(), 'st')
-
     @classmethod
     def create_job_arguments(cls, job: ConversionJob) -> list:
         args = list()
         scene_file_path = job.files.get(JobFormFields.scene_file_field.id, dict()).get('file_path', Path('.'))
+        out_file = job.out_file()
 
-        # inputFile arg
-        args.append(scene_file_path.as_posix())
-        # outputFile arg
-        args.append(job.files.get('out_file', dict()).get('file_path', Path('.')).as_posix())
+        # --- Handle Alembic files --
+        # Alembic files need to be post-processed due to "missing" material assignments
+        # intended by the nature of the format. We will assign to matching material/mesh names instead.
+        #
+        # The combination of .abc in suffix and .usdc out suffix will trigger the post-process
+        if scene_file_path.suffix == '.abc':
+            out_file = out_file.with_suffix('.usdc')
+
+        # -inputFile arg -outputFile arg
+        args += [scene_file_path, out_file]
+
+        # Always copy textures for USD inputs
+        if out_file.suffix in ('.usd', '.usda', '.usdc'):
+            args.append('-copytextures')
 
         # --- Add additional arguments ---
         if job.additional_args:
@@ -243,17 +269,18 @@ class JobManager:
             args += job.option_args
 
         # --- Check if we have individual Uv sets per material ---
-        # usdpython 0.62 usdzconvert sets a texCoord default value of "st"
-        # which will break correct UV assignment.
-        # If the user does not choose to provide individual texCoord setting per material
-        # set a default value guessed by the file extension.
         tex_coords = set(f.get(JobFormFields.TextureMap.uv_coord) for f in job.files.values()
                          if f.get(JobFormFields.TextureMap.uv_coord, ''))
         individual_tex_coords = True if len(tex_coords) > 1 else False
+
+        # usdpython 0.62 usdzconvert sets wrong source UVset for alembic files
+        # If the user does not choose to provide individual texCoord setting per material
+        # set a default value guessed by the file extension.
         if not individual_tex_coords:
             # Set a default value guessed by file extension
-            args.append('-texCoordSet')
-            args.append(cls.get_tex_coord_default_name_from_file_type(scene_file_path))
+            default_tex_arg = default_tex_coord_set_names.get(scene_file_path.suffix)
+            if default_tex_arg:
+                args += ['-texCoordSet', default_tex_arg]
 
         # --- Add Material and Texture Map arguments ---
         current_material = ''
@@ -273,13 +300,11 @@ class JobManager:
             # Add material argument
             if material and material != current_material:
                 current_material = material
-                args.append(f'-m')
-                args.append(material)
+                args += ['-m', material]
 
                 # Add texCoordSet argument
                 if individual_tex_coords and tex_coord:
-                    args.append('-texCoordSet')
-                    args.append(tex_coord)
+                    args += ['-texCoordSet', tex_coord]
 
             # Add texture maps file arguments
             args.append(f'-{map_type}')
@@ -290,7 +315,7 @@ class JobManager:
                 args.append(channel.lower())
 
             if file_path:
-                args.append(Path(file_path).as_posix())
+                args.append(Path(file_path))
 
             # Add fallback color or luminosity constant
             if color:
@@ -306,6 +331,8 @@ class JobManager:
                 return
             job.set_in_progress()
             job_arguments = create_usdzconvert_arguments(cls.create_job_arguments(job))
+            _logger.info('Running Job with arguments: %s', job_arguments)
+            job.add_arguments_message(job_arguments)  # Document cmd line arguments
 
             process_thread = RunProcess(job_arguments, job.job_dir(), usd_env(), job.job_id,
                                         cls._finished_callback, cls._failed_callback, cls._message_callback)
@@ -320,15 +347,15 @@ class JobManager:
 
         if scene_file.suffix != '.abc':
             return False
-        if job.out_file().suffix != '.usdc':
-            return False
 
         job.progress = 75
         job.message_update('USDZ Conversion Server is post processing your Alembic input file.')
 
         # --- Start Alembic post process ---
         args = create_abc_post_process_arguments()
-        args.append(job.out_file())
+        args.append(scene_file.with_suffix('.usdc'))
+
+        job.add_arguments_message(args)
 
         post_process_thread = RunProcess(args, job.job_dir(), usd_env(), job.job_id,
                                          cls._finished_callback, cls._failed_callback, cls._message_callback)
@@ -361,6 +388,9 @@ class JobManager:
         job.set_preview_file(img_file)
 
         args += [usdz_file, img_file, '--imageWidth', '400', '--renderer', 'GL']
+
+        job.add_arguments_message(args)
+
         post_process_thread = RunProcess(args, job.job_dir(), usd_env(), job.job_id,
                                          cls._preview_image_generated, None, cls._message_callback)
         post_process_thread.start()

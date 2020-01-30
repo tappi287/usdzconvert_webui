@@ -64,7 +64,6 @@ def upload_files():
 
         job = ConversionJob(file_mgr.job_dir, file_mgr.files, request.form)
         job.state = ConversionJob.States.queued
-        App.logger.info('Creating job with arguments: %s', ' '.join(JobManager.create_job_arguments(job)))
 
         db.session.add(job)
         db.session.commit()

@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Union
 
 from appdirs import user_data_dir, user_log_dir
 
@@ -19,11 +20,11 @@ except Exception as e:
     print(e)
 
 default_tex_coord_set_names = {
-    '.gltf': 'TEXCOORD_0',
-    '.glb': 'TEXCOORD_0',
-    '.bin': 'TEXCOORD_0',
+    # '.gltf': 'TEXCOORD_0', not required
+    # '.glb': 'TEXCOORD_0',
+    # '.bin': 'TEXCOORD_0',
     '.abc': 'uv',
-    '.obj': 'UVMap',
+    # '.obj': 'UVMap', not required
 }
 
 
@@ -45,7 +46,7 @@ def get_log_dir() -> str:
     return _check_and_create_dir(user_log_dir(SETTINGS_DIR_NAME, ''))
 
 
-def _check_and_create_dir(directory: str):
+def _check_and_create_dir(directory: Union[str, Path]):
     if not os.path.exists(directory):
         try:
             os.mkdir(directory)

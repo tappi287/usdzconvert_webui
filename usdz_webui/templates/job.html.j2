@@ -4,6 +4,10 @@
 
 {% block head %}
     {{ super() }}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jobs.js') }}"></script>
+    <script type="text/javascript">
+        var d = JobPreviewImgs ()
+    </script>
 {% endblock %}
 
 {% block page_title %}
@@ -55,12 +59,25 @@
                                         title="Share the file on a public remote server">Share</button>
                                     </form>
                                 {% endif %}
+                                {% if job.preview_file().is_file() and job.preview_file().exists() %}
+                                    <form method="get" action="{{ job.preview_url() }}" class="montform dl_preview" id="{{ job.job_id }}">
+                                        <button type="submit" id="dl_pre_{{ job.job_id }}" class="button-blue"
+                                        title="Download a preview image">Preview</button>
+                                        <img style="display: none;" id="dl_img_{{ job.job_id }}" class="download-preview" 
+                                        src="{{ job.preview_url() }}">
+                                    </form>
+                                {% endif %}
                             </td>
                         {% endif %}
                     </tr>
                 </table>
                 <details>
                     <summary>Job Details</summary>
+                    {% if job.preview_file().is_file() and job.preview_file().exists() %}
+                        <div class="file">
+                            <img class="preview_image" src="{{ job.preview_url() }}">
+                        </div>
+                    {% endif %}
                     <table>
                         <tr class="title"><th>Conversion Output</th></tr>
                         <tr class="job-report">
@@ -81,11 +98,6 @@
                         </tr>
                         {% endif %}
                     </table>
-                    {% if job.preview_file().is_file() and job.preview_file().exists(): %}
-                    <div class="file">
-                        <img class="preview_image" src="{{ job.preview_url() }}">
-                    </div>
-                    {% endif %}
                     <table>
                         <tr class="title">
                             <th>Element</th>
