@@ -48,17 +48,6 @@ Web service aiming to provide a GUI across a local network for converting 3d con
 
 Useful if you just need a local usdz converter and do not want to share your assets with some cloud service or built USD from scratch.
 
-
-### Built With
-
-* [flask](https://palletsprojects.com/p/flask/)
-* [waitress](https://docs.pylonsproject.org/projects/waitress/en/stable/)
-* [OpenUSD](https://graphics.pixar.com/usd/)
-* [usdpython_0.62](https://developer.apple.com/augmented-reality/quick-look/)
-* [usdzconvert_windows](https://github.com/tappi287/usdzconvert_windows)
-
-
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
@@ -123,6 +112,7 @@ This is an incomplete list of awesome free software used to create this app.
 * [paramiko](https://github.com/paramiko/paramiko)
 * [ultrajson](https://github.com/esnme/ultrajson)
 * [cryptography](https://github.com/pyca/cryptography)
+* [pickr](https://github.com/Simonwep/pickr)
 * [PyNsist](https://pynsist.readthedocs.io/en/latest/)
 * [Best-ReadMe-Template](https://github.com/tappi287/Best-README-Template)
 
