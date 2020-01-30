@@ -256,7 +256,7 @@ class JobManager:
         args += [scene_file_path, out_file]
 
         # Always copy textures for USD inputs
-        if out_file.suffix in ('.usd', '.usda', '.usdc'):
+        if out_file.suffix in ('.usd', '.usda', '.usdc') and '-copytextures' not in job.option_args:
             args.append('-copytextures')
 
         # --- Add additional arguments ---
