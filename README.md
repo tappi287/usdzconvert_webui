@@ -69,6 +69,7 @@ python3 -m pip install --user pipenv
     2. Execute the installer, pre-built USD binaries will be downloaded from [this repository](https://github.com/tappi287/usdzconvert_windows) on first run
     
     If you encounter an error aka the console window is disappearing right after you started it: try to run it in a command prompt so you see what is happening eg.:
+    
     ```"C:\Program Files\usdz_webui\Python\python.exe" "C:\Program Files\usdz_webui\usdz_webui.launch.py"```
 
 * Unix
